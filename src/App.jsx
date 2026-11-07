@@ -541,7 +541,7 @@ function ProductCard({product, order}) {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [quantity, setQuantity] = useState(1);
-
+const [orderId, setOrderId] = useState('');
   async function submitOrder(e) {
     e.preventDefault();
 
@@ -550,32 +550,35 @@ function ProductCard({product, order}) {
       return;
     }
 
-    const { error } = await supabase
-      .from('orders')
-      .insert({
-        customer_name: customerName,
-        phone: phone,
-        address: address,
-        product_id: product.id,
-        product_name: product.name,
-        size: size,
-        quantity: Number(quantity),
-        unit_price: product.price || null,
-        total_price: product.price
-          ? Number(product.price) * Number(quantity)
-          : null,
-        status: 'Pending'
-      });
+    const { data: order, error } = await supabase
+  .from('orders')
+  .insert({
+    customer_name: customerName,
+    phone: phone,
+    address: address,
+    product_id: product.id,
+    product_name: product.name,
+    size: size,
+    quantity: Number(quantity),
+    unit_price: product.price || null,
+    total_price: product.price
+      ? Number(product.price) * Number(quantity)
+      : null,
+    status: 'Pending'
+  })
+  .select('id')
+  .single();
 
     if (error) {
       alert('Order failed: ' + error.message);
-    } else {
-      alert('Order placed successfully!');
-      setShowOrder(false);
-      setCustomerName('');
-      setPhone('');
-      setAddress('');
-      setQuantity(1);
+ } else {
+  setOrderId(order.id);
+  alert('Order placed successfully! Your Order ID: ' + order.id);
+  setShowOrder(false);
+  setCustomerName('');
+  setPhone('');
+  setAddress('');
+  setQuantity(1);
     }
   }
 
@@ -670,6 +673,14 @@ function ProductCard({product, order}) {
             CANCEL
           </button>
         </form>
+      )}
+      
+      {orderId && (
+        <div className="order-success">
+          <h3>Order placed successfully!</h3>
+          <p>Save your Order ID to track your order:</p>
+          <strong>{orderId}</strong>
+        </div>
       )}
     </article>
   );
