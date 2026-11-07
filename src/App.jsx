@@ -458,47 +458,49 @@ export default function App() {
 
 function ProductCard({product, order}) {
   const [size, setSize] = useState(product.sizes?.[0] || '');
-const [showOrder, setShowOrder] = useState(false);
-const [customerName, setCustomerName] = useState('');
-const [phone, setPhone] = useState('');
-const [address, setAddress] = useState('');
-const [quantity, setQuantity] = useState(1);
-async function submitOrder(e) {
-  e.preventDefault();
+  const [showOrder, setShowOrder] = useState(false);
+  const [customerName, setCustomerName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [quantity, setQuantity] = useState(1);
 
-  if (product.stock < 1 || Number(quantity) > product.stock) {
-    alert('Not enough stock available!');
-    return;
+  async function submitOrder(e) {
+    e.preventDefault();
+
+    if (product.stock < 1 || Number(quantity) > product.stock) {
+      alert('Not enough stock available!');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('orders')
+      .insert({
+        customer_name: customerName,
+        phone: phone,
+        address: address,
+        product_id: product.id,
+        product_name: product.name,
+        size: size,
+        quantity: Number(quantity),
+        unit_price: product.price || null,
+        total_price: product.price
+          ? Number(product.price) * Number(quantity)
+          : null,
+        status: 'Pending'
+      });
+
+    if (error) {
+      alert('Order failed: ' + error.message);
+    } else {
+      alert('Order placed successfully!');
+      setShowOrder(false);
+      setCustomerName('');
+      setPhone('');
+      setAddress('');
+      setQuantity(1);
+    }
   }
 
-  const { error } = await supabase
-    .from('orders')
-    .insert({
-      customer_name: customerName,
-      phone: phone,
-      address: address,
-      product_id: product.id,
-      product_name: product.name,
-      size: size,
-      quantity: Number(quantity),
-      unit_price: product.price || null,
-      total_price: product.price
-        ? Number(product.price) * Number(quantity)
-        : null,
-      status: 'Pending'
-    });
-
-  if (error) {
-    alert('Order failed: ' + error.message);
-  } else {
-    alert('Order placed successfully!');
-    setShowOrder(false);
-    setCustomerName('');
-    setPhone('');
-    setAddress('');
-    setQuantity(1);
-  }
-}
   return (
     <article className="product">
       <div className="product-image">
@@ -510,77 +512,87 @@ async function submitOrder(e) {
       <div className="product-info">
         <div>
           <h3>{product.name}</h3>
-          <p>{product.stock > 0
-            ? `IN STOCK · ${product.stock} AVAILABLE`
-            : 'CHECK AVAILABILITY'}</p>
+          <p>
+            {product.stock > 0
+              ? `IN STOCK · ${product.stock} AVAILABLE`
+              : 'CHECK AVAILABILITY'}
+          </p>
         </div>
-        <strong>{product.price
-          ? `৳${product.price}`
-          : 'Price on WhatsApp'}</strong>
+
+        <strong>
+          {product.price
+            ? `৳${product.price}`
+            : 'Price on WhatsApp'}
+        </strong>
       </div>
 
       <div className="product-actions">
-        <select value={size}
-          onChange={e => setSize(e.target.value)}>
-          {(product.sizes?.length ? product.sizes : ['Select size']).map(s =>
+        <select
+          value={size}
+          onChange={e => setSize(e.target.value)}
+        >
+          {(product.sizes?.length
+            ? product.sizes
+            : ['Select size']
+          ).map(s => (
             <option key={s} value={s}>{s}</option>
-          )}
+          ))}
         </select>
+
         <button
-  disabled={product.stock < 1}
-  onClick={() => setShowOrder(true)}
->
-  ORDER NOW ↗
-</button>
-
-{showOrder && (
-  <form onSubmit={submitOrder} className="order-form">
-    <h3>Complete Your Order</h3>
-
-    <input
-      className="search"
-      placeholder="Your full name"
-      value={customerName}
-      onChange={e => setCustomerName(e.target.value)}
-      required
-    />
-
-    <input
-      className="search"
-      placeholder="Phone number"
-      value={phone}
-      onChange={e => setPhone(e.target.value)}
-      required
-    />
-
-    <textarea
-      className="search"
-      placeholder="Delivery address"
-      value={address}
-      onChange={e => setAddress(e.target.value)}
-      required
-    />
-
-    <p>Selected size: {size}</p>
-
-    <input
-      className="search"
-      type="number"
-      min="1"
-      max={product.stock}
-      value={quantity}
-      onChange={e => setQuantity(e.target.value)}
-      required
-    />
-
-    <button type="submit">CONFIRM ORDER</button>
-
-    <button type="button" onClick={() => setShowOrder(false)}>
-      CANCEL
-    </button>
-  </form>
-)}
+          disabled={product.stock < 1}
+          onClick={() => setShowOrder(true)}
+        >
+          ORDER NOW ↗
+        </button>
       </div>
+
+      {showOrder && (
+        <form onSubmit={submitOrder} className="order-form">
+          <h3>Complete Your Order</h3>
+
+          <input
+            placeholder="Your full name"
+            value={customerName}
+            onChange={e => setCustomerName(e.target.value)}
+            required
+          />
+
+          <input
+            placeholder="Phone number"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            required
+          />
+
+          <textarea
+            placeholder="Delivery address"
+            value={address}
+            onChange={e => setAddress(e.target.value)}
+            required
+          />
+
+          <p>Selected size: {size}</p>
+
+          <input
+            type="number"
+            min="1"
+            max={product.stock}
+            value={quantity}
+            onChange={e => setQuantity(e.target.value)}
+            required
+          />
+
+          <button type="submit">CONFIRM ORDER</button>
+
+          <button
+            type="button"
+            onClick={() => setShowOrder(false)}
+          >
+            CANCEL
+          </button>
+        </form>
+      )}
     </article>
   );
 }
