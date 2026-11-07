@@ -23,6 +23,10 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 const [orders, setOrders] = useState([]);
 const [orderLoading, setOrderLoading] = useState(false);
+ const [trackingId, setTrackingId] = useState('');
+const [trackingPhone, setTrackingPhone] = useState('');
+const [trackedOrder, setTrackedOrder] = useState(null);
+const [trackingLoading, setTrackingLoading] = useState(false);
   useEffect(() => {
     loadProducts();
     loadCategories();
@@ -53,7 +57,26 @@ async function loadOrders() {
 
   setOrderLoading(false);
 }
+async function trackOrder(e) {
+  e.preventDefault();
+  setTrackingLoading(true);
+  setTrackedOrder(null);
 
+  const { data, error } = await supabase.rpc('track_order', {
+    p_order_id: trackingId.trim(),
+    p_phone: trackingPhone.trim()
+  });
+
+  if (error) {
+    alert('Tracking failed: ' + error.message);
+  } else if (!data || data.length === 0) {
+    alert('No order found. Check Order ID and phone number.');
+  } else {
+    setTrackedOrder(data[0]);
+  }
+
+  setTrackingLoading(false);
+}
 async function updateOrderStatus(id, status) {
   const { error } = await supabase
     .from('orders')
@@ -298,7 +321,45 @@ if (data) {
           FOOTBALL IS MORE THAN A GAME.
         </div>
       </section>
+<section className="tracking-section">
+  <div className="tracking-box">
+    <p className="eyebrow">ORDER TRACKING</p>
+    <h2>Track Your Order.</h2>
+    <p>Enter your Order ID and phone number to check your order status.</p>
 
+    <form onSubmit={trackOrder}>
+      <input
+        className="search"
+        placeholder="Enter Order ID"
+        value={trackingId}
+        onChange={e => setTrackingId(e.target.value)}
+        required
+      />
+
+      <input
+        className="search"
+        placeholder="Enter Phone Number"
+        value={trackingPhone}
+        onChange={e => setTrackingPhone(e.target.value)}
+        required
+      />
+
+      <button className="admin-submit" disabled={trackingLoading}>
+        {trackingLoading ? 'CHECKING...' : 'TRACK ORDER'}
+      </button>
+    </form>
+
+    {trackedOrder && (
+      <div className="tracking-result">
+        <h3>{trackedOrder.product_name}</h3>
+        <p>Size: {trackedOrder.size}</p>
+        <p>Quantity: {trackedOrder.quantity}</p>
+        <p>Total: ৳{trackedOrder.total_price ?? 'Not set'}</p>
+        <h3>Status: {trackedOrder.status}</h3>
+      </div>
+    )}
+  </div>
+</section>
       <main id="shop" className="shop">
         <div className="section-heading">
           <div>
