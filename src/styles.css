@@ -316,3 +316,46 @@ footer small { font-size: 9px; color: #8291a8; }
   opacity: 1 !important;
   min-height: 50px !important;
 }
+.order-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  gap: 12px;
+  padding: 16px;
+  margin-top: 15px;
+  background: #f5f6f8;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.order-form input,
+.order-form textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 13px;
+  margin: 0;
+  border: 1px solid #d5d9e0;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.order-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.order-form button {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 14px;
+  margin: 0;
+  border-radius: 8px;
+  white-space: normal;
+}
