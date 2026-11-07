@@ -21,7 +21,8 @@ export default function App() {
   const [photo, setPhoto] = useState(null);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-
+const [orders, setOrders] = useState([]);
+const [orderLoading, setOrderLoading] = useState(false);
   useEffect(() => {
     loadProducts();
     loadCategories();
@@ -36,7 +37,36 @@ export default function App() {
 
     return () => listener.subscription.unsubscribe();
   }, []);
+async function loadOrders() {
+  setOrderLoading(true);
 
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    setMessage(error.message);
+  } else {
+    setOrders(data || []);
+  }
+
+  setOrderLoading(false);
+}
+
+async function updateOrderStatus(id, status) {
+  const { error } = await supabase
+    .from('orders')
+    .update({ status })
+    .eq('id', id);
+
+  if (error) {
+    setMessage(error.message);
+  } else {
+    setMessage('Order status updated!');
+    await loadOrders();
+  }
+}
   async function loadProducts() {
     const { data, error } = await supabase
       .from('products')
@@ -70,6 +100,12 @@ export default function App() {
       .maybeSingle();
 
     setAdmin(!!data);
+
+if (data) {
+  await loadOrders();
+} else {
+  setOrders([]);
+}
   }
 
   async function login(e) {
@@ -426,7 +462,49 @@ export default function App() {
                   </button>
 
                   {message && <p>{message}</p>}
+<h3>Manage Orders ({orders.length})</h3>
 
+{orderLoading && <p>Loading orders...</p>}
+
+{!orderLoading && orders.length === 0 && (
+  <p>No orders received yet.</p>
+)}
+
+{orders.map(o => (
+  <div
+    key={o.id}
+    style={{
+      border: '1px solid #ddd',
+      padding: 14,
+      marginBottom: 12,
+      borderRadius: 8
+    }}
+  >
+    <h4>{o.product_name}</h4>
+
+    <p><strong>Customer:</strong> {o.customer_name}</p>
+    <p><strong>Phone:</strong> {o.phone}</p>
+    <p><strong>Address:</strong> {o.address}</p>
+    <p><strong>Size:</strong> {o.size}</p>
+    <p><strong>Quantity:</strong> {o.quantity}</p>
+    <p><strong>Total:</strong> ৳{o.total_price ?? 'Not set'}</p>
+    <p><strong>Date:</strong> {new Date(o.created_at).toLocaleString()}</p>
+
+    <label>Order Status</label>
+
+    <select
+      className="search"
+      value={o.status}
+      onChange={e => updateOrderStatus(o.id, e.target.value)}
+    >
+      <option value="Pending">Pending</option>
+      <option value="Confirmed">Confirmed</option>
+      <option value="Shipped">Shipped</option>
+      <option value="Delivered">Delivered</option>
+      <option value="Cancelled">Cancelled</option>
+    </select>
+  </div>
+))}
                   <h3>Products ({products.length})</h3>
 
                   {products.map(p => (
