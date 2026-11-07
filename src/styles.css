@@ -418,3 +418,8 @@ footer small { font-size: 9px; color: #8291a8; }
   width: 100%;
   min-width: 0;
 }
+.product-actions .order-form {
+  margin-left: auto;
+  margin-right: auto;
+  align-self: stretch;
+}
