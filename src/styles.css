@@ -278,3 +278,18 @@ footer small { font-size: 9px; color: #8291a8; }
 @media (max-width: 380px) {
   .products { grid-template-columns: 1fr; }
 }
+.admin-submit {
+  display: block !important;
+  width: 100% !important;
+  padding: 16px !important;
+  margin: 15px 0 !important;
+  background: #101d35 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
