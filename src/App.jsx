@@ -5,49 +5,262 @@ const WA = '966564905417';
 
 export default function App() {
   const [products, setProducts] = useState([]);
-  const [category, setCategory] = useState('All');
+  const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
-  const [selected, setSelected] = useState(null);
-  const [sizes, setSizes] = useState({});
+  const [category, setCategory] = useState('All');
+  const [admin, setAdmin] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [form, setForm] = useState({
+    name: '', description: '', price: '',
+    stock: 0, sizes: 'M,L,XL',
+    category_id: '', image_url: ''
+  });
+  const [editing, setEditing] = useState(null);
+  const [photo, setPhoto] = useState(null);
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadProducts();
+    loadCategories();
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) checkAdmin();
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      checkAdmin();
+    });
+
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   async function loadProducts() {
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .eq('is_active', true)
       .order('created_at', { ascending: false });
 
     if (!error) setProducts(data || []);
   }
 
-  const filtered = products.filter(p =>
-    (category === 'All' || p.category_id === category) &&
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
+  async function loadCategories() {
+    const { data } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name');
 
-  function order(p) {
-    const size = sizes[p.id] || p.sizes?.[0] || '';
-    const message = `Assalamu Alaikum! I want to order:\n${p.name}\nSize: ${size}\nPlease share the price.`;
-    window.open(`https://wa.me/${WA}?text=${encodeURIComponent(message)}`, '_blank');
+    setCategories(data || []);
   }
+
+  async function checkAdmin() {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      setAdmin(false);
+      return;
+    }
+
+    const { data } = await supabase
+      .from('admin_users')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    setAdmin(!!data);
+  }
+
+  async function login(e) {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      setMessage(error.message);
+    } else {
+      await checkAdmin();
+      setMessage('Login successful!');
+    }
+
+    setLoading(false);
+  }
+
+  async function logout() {
+    await supabase.auth.signOut();
+    setAdmin(false);
+    setShowLogin(false);
+  }
+
+  function resetForm() {
+    setForm({
+      name: '', description: '', price: '',
+      stock: 0, sizes: 'M,L,XL',
+      category_id: categories[0]?.id || '',
+      image_url: ''
+    });
+    setEditing(null);
+    setPhoto(null);
+  }
+
+  async function saveProduct(e) {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+
+    try {
+      let image_url = form.image_url;
+
+      if (photo) {
+        const ext = photo.name.split('.').pop();
+        const path = `${Date.now()}.${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(path, photo);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(path);
+
+        image_url = data.publicUrl;
+      }
+
+      const payload = {
+        name: form.name,
+        description: form.description,
+        price: form.price ? Number(form.price) : null,
+        stock: Number(form.stock),
+        sizes: form.sizes.split(',').map(s => s.trim()).filter(Boolean),
+        category_id: form.category_id || null,
+        image_url,
+        is_active: true
+      };
+
+      let result;
+
+      if (editing) {
+        result = await supabase
+          .from('products')
+          .update(payload)
+          .eq('id', editing);
+      } else {
+        result = await supabase
+          .from('products')
+          .insert(payload);
+      }
+
+      if (result.error) throw result.error;
+
+      setMessage('Product saved successfully!');
+      resetForm();
+      await loadProducts();
+    } catch (error) {
+      setMessage(error.message || 'Something went wrong');
+    }
+
+    setLoading(false);
+  }
+
+  function editProduct(p) {
+    setEditing(p.id);
+    setForm({
+      name: p.name || '',
+      description: p.description || '',
+      price: p.price || '',
+      stock: p.stock || 0,
+      sizes: (p.sizes || []).join(','),
+      category_id: p.category_id || '',
+      image_url: p.image_url || ''
+    });
+    setPhoto(null);
+    document.getElementById('admin-form')?.scrollIntoView({
+      behavior: 'smooth'
+    });
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm('Delete this product?')) return;
+
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      setMessage(error.message);
+    } else {
+      setMessage('Product deleted.');
+      loadProducts();
+    }
+  }
+
+  async function addCategory() {
+    const name = prompt('Category name:');
+    if (!name?.trim()) return;
+
+    const { error } = await supabase
+      .from('categories')
+      .insert({ name: name.trim() });
+
+    if (error) {
+      setMessage(error.message);
+    } else {
+      await loadCategories();
+      setMessage('Category added!');
+    }
+  }
+
+  function order(p, size) {
+    const message = `Assalamu Alaikum! I want to order:\n${p.name}\nSize: ${size}\nPlease share the price.`;
+
+    window.open(
+      `https://wa.me/${WA}?text=${encodeURIComponent(message)}`,
+      '_blank'
+    );
+  }
+
+  const filtered = products.filter(p =>
+    p.is_active &&
+    p.name.toLowerCase().includes(search.toLowerCase()) &&
+    (category === 'All' || p.category_id === category)
+  );
 
   return (
     <div className="app">
       <header className="navbar">
         <a className="logo" href="#">CORE<span>KITS.</span></a>
-        <a className="contact" href={`https://wa.me/${WA}`}>CONTACT ↗</a>
+
+        <div style={{display:'flex',gap:12,alignItems:'center'}}>
+          <a className="contact" href={`https://wa.me/${WA}`}>
+            CONTACT ↗
+          </a>
+          <button
+            onClick={() => setShowLogin(true)}
+            style={{border:0,background:'none',fontSize:20}}
+            aria-label="Admin login"
+          >♙</button>
+        </div>
       </header>
 
       <section className="hero">
         <p className="eyebrow">THE FOOTBALL CULTURE</p>
-        <h1>WEAR THE<br /><span>DIFFERENCE.</span></h1>
+        <h1>WEAR THE<br/><span>DIFFERENCE.</span></h1>
         <p>Represent your club. Wear your passion.</p>
-        <a href="#shop" className="shop-btn">EXPLORE COLLECTION ↗</a>
-        <div className="hero-bottom">FOOTBALL IS MORE THAN A GAME.</div>
+        <a href="#shop" className="shop-btn">
+          EXPLORE COLLECTION ↗
+        </a>
+        <div className="hero-bottom">
+          FOOTBALL IS MORE THAN A GAME.
+        </div>
       </section>
 
       <main id="shop" className="shop">
@@ -56,7 +269,7 @@ export default function App() {
             <p className="eyebrow">OUR COLLECTION</p>
             <h2>Find Your Kit.</h2>
           </div>
-          <span>{products.length} PRODUCTS</span>
+          <span>{filtered.length} PRODUCTS</span>
         </div>
 
         <input
@@ -67,65 +280,216 @@ export default function App() {
         />
 
         <div className="filters">
-          {['All', 'Club Kits', 'Country Kits'].map(c => (
+          <button
+            className={category === 'All' ? 'active' : ''}
+            onClick={() => setCategory('All')}
+          >All</button>
+
+          {categories.map(c => (
             <button
-              className={category === c ? 'active' : ''}
-              onClick={() => setCategory(c)}
-              key={c}
-            >{c}</button>
+              key={c.id}
+              className={category === c.id ? 'active' : ''}
+              onClick={() => setCategory(c.id)}
+            >{c.name}</button>
           ))}
         </div>
 
         <div className="products">
           {filtered.map(p => (
-            <article className="product" key={p.id}>
-              <button className="product-image" onClick={() => setSelected(p)}>
-                {p.image_url
-                  ? <img src={p.image_url} alt={p.name} />
-                  : <span>CORE KITS.</span>}
-              </button>
-              <div className="product-info">
-                <div>
-                  <h3>{p.name}</h3>
-                  <p>{p.stock > 0 ? `IN STOCK · ${p.stock} AVAILABLE` : 'CHECK AVAILABILITY'}</p>
-                </div>
-                <strong>{p.price ? `৳${p.price}` : 'Price on WhatsApp'}</strong>
-              </div>
-              <div className="product-actions">
-                <select value={sizes[p.id] || p.sizes?.[0] || ''}
-                  onChange={e => setSizes({...sizes, [p.id]: e.target.value})}>
-                  {(p.sizes?.length ? p.sizes : ['Select size']).map(s =>
-                    <option key={s}>{s}</option>
-                  )}
-                </select>
-                <button onClick={() => order(p)}>ORDER ↗</button>
-              </div>
-            </article>
+            <ProductCard key={p.id} product={p} order={order}/>
           ))}
         </div>
 
         {filtered.length === 0 && (
-          <p className="empty">No kits found. New collection coming soon.</p>
+          <p className="empty">
+            No kits found. New collection coming soon.
+          </p>
         )}
       </main>
-
-      {selected && (
-        <div className="modal" onClick={() => setSelected(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="close" onClick={() => setSelected(null)}>✕</button>
-            {selected.image_url && <img src={selected.image_url} alt={selected.name} />}
-            <h2>{selected.name}</h2>
-            <p>{selected.description || 'Represent your favourite team.'}</p>
-            <button onClick={() => order(selected)}>ORDER ON WHATSAPP ↗</button>
-          </div>
-        </div>
-      )}
 
       <footer>
         <a className="logo" href="#">CORE<span>KITS.</span></a>
         <p>WEAR THE DIFFERENCE.</p>
         <small>© 2026 CORE KITS. ALL RIGHTS RESERVED.</small>
       </footer>
+
+      {showLogin && (
+        <div className="modal">
+          <div className="modal-content">
+            <button className="close"
+              onClick={() => setShowLogin(false)}>✕</button>
+
+            {!admin ? (
+              <>
+                <h2>Admin Login</h2>
+                <form onSubmit={login}>
+                  <input
+                    className="search"
+                    type="email"
+                    placeholder="Admin email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                  />
+                  <input
+                    className="search"
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                  />
+                  <button className="admin-submit" disabled={loading}>
+                    {loading ? 'PLEASE WAIT...' : 'LOGIN'}
+                  </button>
+                </form>
+                {message && <p>{message}</p>}
+              </>
+            ) : (
+              <div>
+                <h2>Admin Dashboard</h2>
+                <p>Manage your CORE KITS collection.</p>
+
+                <button className="admin-submit" onClick={logout}>
+                  LOG OUT
+                </button>
+
+                <div id="admin-form">
+                  <h3>{editing ? 'Edit Product' : 'Add New Product'}</h3>
+
+                  <form onSubmit={saveProduct}>
+                    <input className="search"
+                      placeholder="Product name"
+                      value={form.name}
+                      onChange={e => setForm({...form,name:e.target.value})}
+                      required
+                    />
+
+                    <textarea className="search"
+                      placeholder="Description"
+                      value={form.description}
+                      onChange={e => setForm({...form,description:e.target.value})}
+                    />
+
+                    <input className="search"
+                      type="number"
+                      placeholder="Price in BDT"
+                      value={form.price}
+                      onChange={e => setForm({...form,price:e.target.value})}
+                    />
+
+                    <input className="search"
+                      type="number"
+                      placeholder="Stock"
+                      value={form.stock}
+                      onChange={e => setForm({...form,stock:e.target.value})}
+                    />
+
+                    <input className="search"
+                      placeholder="Sizes: M,L,XL"
+                      value={form.sizes}
+                      onChange={e => setForm({...form,sizes:e.target.value})}
+                    />
+
+                    <select className="search"
+                      value={form.category_id}
+                      onChange={e => setForm({...form,category_id:e.target.value})}
+                    >
+                      <option value="">Select category</option>
+                      {categories.map(c =>
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      )}
+                    </select>
+
+                    <label>Product photo</label>
+                    <input className="search"
+                      type="file"
+                      accept="image/*"
+                      onChange={e => setPhoto(e.target.files?.[0] || null)}
+                    />
+
+                    <button className="admin-submit" disabled={loading}>
+                      {loading ? 'SAVING...' : editing ? 'UPDATE PRODUCT' : 'ADD PRODUCT'}
+                    </button>
+
+                    {editing && (
+                      <button type="button" className="admin-submit"
+                        onClick={resetForm}>
+                        CANCEL EDIT
+                      </button>
+                    )}
+                  </form>
+
+                  <button className="admin-submit"
+                    onClick={addCategory}>
+                    + ADD CATEGORY
+                  </button>
+
+                  {message && <p>{message}</p>}
+
+                  <h3>Products ({products.length})</h3>
+
+                  {products.map(p => (
+                    <div key={p.id}
+                      style={{
+                        display:'flex',justifyContent:'space-between',
+                        alignItems:'center',gap:8,
+                        borderBottom:'1px solid #ddd',padding:'12px 0'
+                      }}>
+                      <div>
+                        <strong>{p.name}</strong>
+                        <p>Stock: {p.stock} | Price: {p.price || 'On request'}</p>
+                      </div>
+                      <div style={{display:'flex',gap:6}}>
+                        <button onClick={() => editProduct(p)}>Edit</button>
+                        <button onClick={() => deleteProduct(p.id)}>Delete</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function ProductCard({product, order}) {
+  const [size, setSize] = useState(product.sizes?.[0] || '');
+
+  return (
+    <article className="product">
+      <div className="product-image">
+        {product.image_url
+          ? <img src={product.image_url} alt={product.name}/>
+          : <span>CORE KITS.</span>}
+      </div>
+
+      <div className="product-info">
+        <div>
+          <h3>{product.name}</h3>
+          <p>{product.stock > 0
+            ? `IN STOCK · ${product.stock} AVAILABLE`
+            : 'CHECK AVAILABILITY'}</p>
+        </div>
+        <strong>{product.price
+          ? `৳${product.price}`
+          : 'Price on WhatsApp'}</strong>
+      </div>
+
+      <div className="product-actions">
+        <select value={size}
+          onChange={e => setSize(e.target.value)}>
+          {(product.sizes?.length ? product.sizes : ['Select size']).map(s =>
+            <option key={s} value={s}>{s}</option>
+          )}
+        </select>
+        <button onClick={() => order(product,size)}>
+          ORDER ↗
+        </button>
+      </div>
+    </article>
   );
 }
