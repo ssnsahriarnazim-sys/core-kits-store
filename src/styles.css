@@ -427,3 +427,18 @@ footer small { font-size: 9px; color: #8291a8; }
   margin-left: auto;
   margin-right: 0;
 }
+.tracking-box {
+  text-align: center;
+}
+
+.tracking-box form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tracking-box input,
+.tracking-box button {
+  width: 100%;
+  max-width: 400px;
+}
