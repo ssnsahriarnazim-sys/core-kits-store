@@ -293,3 +293,26 @@ footer small { font-size: 9px; color: #8291a8; }
   position: relative !important;
   z-index: 10 !important;
 }
+.modal {
+  overflow-y: auto !important;
+  align-items: flex-start !important;
+  padding: 20px 0 !important;
+}
+
+.modal-content {
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  margin: auto !important;
+}
+
+#admin-form {
+  padding-bottom: 50px !important;
+}
+
+#admin-form form .admin-submit {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 50px !important;
+}
