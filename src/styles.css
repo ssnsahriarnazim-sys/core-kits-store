@@ -199,7 +199,21 @@ button { cursor: pointer; }
 .product-info p { font-size: 9px; color: #8995a6; margin: 0; }
 .product-info strong { font-size: 11px; text-align: right; }
 
-.product-actions { display: flex; gap: 8px; }
+.product-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.product-actions .order-form {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+}
 .product-actions select {
   width: 75px;
   border: 1px solid #dce1e9;
@@ -358,4 +372,49 @@ footer small { font-size: 9px; color: #8291a8; }
   margin: 0;
   border-radius: 8px;
   white-space: normal;
+}
+.product-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.product-actions .order-form {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+  position: static;
+}
+
+.product-actions .order-form input,
+.product-actions .order-form textarea,
+.product-actions .order-form button {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.product-actions > button {
+  flex: 1;
+}
+
+.product-actions .order-form {
+  flex: 0 0 100%;
+  width: 100%;
+}
+
+.product-actions .order-form button {
+  flex: none;
+  width: 100%;
+  min-height: 48px;
+}
+
+.product-actions .order-form input,
+.product-actions .order-form textarea {
+  flex: none;
+  width: 100%;
+  min-width: 0;
 }
