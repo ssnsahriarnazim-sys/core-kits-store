@@ -458,7 +458,47 @@ export default function App() {
 
 function ProductCard({product, order}) {
   const [size, setSize] = useState(product.sizes?.[0] || '');
+const [showOrder, setShowOrder] = useState(false);
+const [customerName, setCustomerName] = useState('');
+const [phone, setPhone] = useState('');
+const [address, setAddress] = useState('');
+const [quantity, setQuantity] = useState(1);
+async function submitOrder(e) {
+  e.preventDefault();
 
+  if (product.stock < 1 || Number(quantity) > product.stock) {
+    alert('Not enough stock available!');
+    return;
+  }
+
+  const { error } = await supabase
+    .from('orders')
+    .insert({
+      customer_name: customerName,
+      phone: phone,
+      address: address,
+      product_id: product.id,
+      product_name: product.name,
+      size: size,
+      quantity: Number(quantity),
+      unit_price: product.price || null,
+      total_price: product.price
+        ? Number(product.price) * Number(quantity)
+        : null,
+      status: 'Pending'
+    });
+
+  if (error) {
+    alert('Order failed: ' + error.message);
+  } else {
+    alert('Order placed successfully!');
+    setShowOrder(false);
+    setCustomerName('');
+    setPhone('');
+    setAddress('');
+    setQuantity(1);
+  }
+}
   return (
     <article className="product">
       <div className="product-image">
@@ -486,9 +526,60 @@ function ProductCard({product, order}) {
             <option key={s} value={s}>{s}</option>
           )}
         </select>
-        <button onClick={() => order(product,size)}>
-          ORDER ↗
-        </button>
+        <button
+  disabled={product.stock < 1}
+  onClick={() => setShowOrder(true)}
+>
+  ORDER NOW ↗
+</button>
+
+{showOrder && (
+  <form onSubmit={submitOrder} className="order-form">
+    <h3>Complete Your Order</h3>
+
+    <input
+      className="search"
+      placeholder="Your full name"
+      value={customerName}
+      onChange={e => setCustomerName(e.target.value)}
+      required
+    />
+
+    <input
+      className="search"
+      placeholder="Phone number"
+      value={phone}
+      onChange={e => setPhone(e.target.value)}
+      required
+    />
+
+    <textarea
+      className="search"
+      placeholder="Delivery address"
+      value={address}
+      onChange={e => setAddress(e.target.value)}
+      required
+    />
+
+    <p>Selected size: {size}</p>
+
+    <input
+      className="search"
+      type="number"
+      min="1"
+      max={product.stock}
+      value={quantity}
+      onChange={e => setQuantity(e.target.value)}
+      required
+    />
+
+    <button type="submit">CONFIRM ORDER</button>
+
+    <button type="button" onClick={() => setShowOrder(false)}>
+      CANCEL
+    </button>
+  </form>
+)}
       </div>
     </article>
   );
