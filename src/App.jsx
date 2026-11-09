@@ -13,10 +13,15 @@ export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [form, setForm] = useState({
-    name: '', description: '', price: '',
-    stock: 0, sizes: 'M,L,XL',
-    category_id: '', image_url: ''
-  });
+  name: '',
+  description: '',
+  price: '',
+  original_price: '',
+  stock: 0,
+  sizes: 'M,L,XL,XXL,XXXL',
+  category_id: '',
+  image_url: ''
+});
   const [editing, setEditing] = useState(null);
   const [photo, setPhoto] = useState(null);
   const [message, setMessage] = useState('');
@@ -158,14 +163,18 @@ if (data) {
   }
 
   function resetForm() {
-    setForm({
-      name: '', description: '', price: '',
-      stock: 0, sizes: 'M,L,XL',
-      category_id: categories[0]?.id || '',
-      image_url: ''
-    });
-    setEditing(null);
-    setPhoto(null);
+  setForm({
+    name: '',
+    description: '',
+    price: '',
+    original_price: '',
+    stock: 0,
+    sizes: 'M,L,XL,XXL,XXXL',
+    category_id: categories[0]?.id || '',
+    image_url: ''
+  });
+  setEditing(null);
+  setPhoto(null);
   }
 
   async function saveProduct(e) {
@@ -197,10 +206,12 @@ if (data) {
         name: form.name,
         description: form.description,
         price: form.price ? Number(form.price) : null,
+        original_price: form.original_price ? Number(form.original_price) : null,
         stock: Number(form.stock),
         sizes: form.sizes.split(',').map(s => s.trim()).filter(Boolean),
         category_id: form.category_id || null,
         image_url,
+        image_urls: image_url ? [image_url] : [],
         is_active: true
       };
 
@@ -235,8 +246,9 @@ if (data) {
       name: p.name || '',
       description: p.description || '',
       price: p.price || '',
-      stock: p.stock || 0,
-      sizes: (p.sizes || []).join(','),
+original_price: p.original_price || '',
+stock: p.stock || 0,
+sizes: (p.sizes || []).join(','),
       category_id: p.category_id || '',
       image_url: p.image_url || ''
     });
@@ -474,7 +486,15 @@ if (data) {
                       value={form.price}
                       onChange={e => setForm({...form,price:e.target.value})}
                     />
-
+<input
+  className="search"
+  type="number"
+  placeholder="Original Price (BDT)"
+  value={form.original_price}
+  onChange={e =>
+    setForm({...form, original_price: e.target.value})
+  }
+/>
                     <input className="search"
                       type="number"
                       placeholder="Stock"
@@ -662,9 +682,28 @@ const [orderId, setOrderId] = useState('');
         </div>
 
         <strong>
-          {product.price
-            ? `৳${product.price}`
-            : 'Price on WhatsApp'}
+          <div className="product-price">
+  {product.original_price > product.price && (
+    <span className="original-price">
+      ৳{product.original_price}
+    </span>
+  )}
+
+  <strong>
+    {product.price
+      ? `৳${product.price}`
+      : 'Price on WhatsApp'}
+  </strong>
+
+  {product.original_price > product.price && (
+    <span className="discount-badge">
+      {Math.round(
+        ((product.original_price - product.price) /
+          product.original_price) * 100
+      )}% OFF
+    </span>
+  )}
+</div>
         </strong>
       </div>
 
