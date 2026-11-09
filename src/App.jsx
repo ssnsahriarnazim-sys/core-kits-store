@@ -41,14 +41,25 @@ const [trackingLoading, setTrackingLoading] = useState(false);
     loadProducts();
     loadCategories();
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (error) {
+        setMessage(error.message);
+        return;
+      }
       setCustomer(data.session?.user || null);
-      if (data.session) checkAdmin();
+      if (data.session?.user) checkAdmin();
     });
 
+    // Do not call Supabase APIs inside onAuthStateChange: it can deadlock
+    // while the auth lock is held. Defer the admin check until the callback ends.
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setCustomer(session?.user || null);
-      checkAdmin();
+      if (session?.user) {
+        window.setTimeout(() => checkAdmin(), 0);
+      } else {
+        setAdmin(false);
+        setOrders([]);
+      }
     });
 
     return () => listener.subscription.unsubscribe();
