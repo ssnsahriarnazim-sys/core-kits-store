@@ -10,6 +10,9 @@ export default function App() {
   const [category, setCategory] = useState('All');
   const [admin, setAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [customer, setCustomer] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [form, setForm] = useState({
@@ -39,10 +42,12 @@ const [trackingLoading, setTrackingLoading] = useState(false);
     loadCategories();
 
     supabase.auth.getSession().then(({ data }) => {
+      setCustomer(data.session?.user || null);
       if (data.session) checkAdmin();
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCustomer(session?.user || null);
       checkAdmin();
     });
 
@@ -158,10 +163,21 @@ if (data) {
     setLoading(false);
   }
 
+  async function customerGoogleLogin() {
+    setMessage('');
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+    if (error) setMessage(error.message);
+  }
+
   async function logout() {
     await supabase.auth.signOut();
     setAdmin(false);
+    setCustomer(null);
     setShowLogin(false);
+    setShowAccount(false);
   }
 
   function resetForm() {
@@ -355,7 +371,7 @@ sizes: (p.sizes || []).join(','),
           FOOTBALL IS MORE THAN A GAME.
         </div>
       </section>
-<section className="tracking-section">
+<section id="tracking" className="tracking-section">
   <div className="tracking-box">
     <p className="eyebrow">ORDER TRACKING</p>
     <h2>Track Your Order.</h2>
@@ -444,11 +460,47 @@ sizes: (p.sizes || []).join(','),
         <small>© 2026 CORE KITS. ALL RIGHTS RESERVED.</small>
       </footer>
 <nav className="floating-nav">
-  <a href="#tracking">♙<span>MY ACCOUNT</span></a>
-  <a href="#shop">🛒<span>CART</span></a>
+  <button type="button" onClick={() => setShowAccount(true)}>♙<span>MY ACCOUNT</span></button>
+  <button type="button" onClick={() => setMessage('Cart feature is not available yet.')}>🛒<span>CART</span></button>
   <a href="#shop">⚽<span>SHOP</span></a>
-  <a href="#">☰<span>MENU</span></a>
+  <button type="button" onClick={() => setShowMenu(true)}>☰<span>MENU</span></button>
 </nav>
+      {showAccount && (
+        <div className="account-overlay" onClick={() => setShowAccount(false)}>
+          <section className="account-panel" onClick={e => e.stopPropagation()}>
+            <button className="account-close" onClick={() => setShowAccount(false)} aria-label="Close account">×</button>
+            <p className="eyebrow">CORE KITS MEMBER</p>
+            <h2>My Account</h2>
+            {customer ? (
+              <>
+                <p className="account-muted">You are signed in as</p>
+                <strong className="account-email">{customer.email || 'Google account'}</strong>
+                <a className="account-link" href="#tracking" onClick={() => setShowAccount(false)}>Track an order →</a>
+                <button className="account-action" onClick={logout}>LOG OUT</button>
+              </>
+            ) : (
+              <>
+                <p className="account-muted">Sign in with your Google account to access your CORE KITS account.</p>
+                <button className="google-login" onClick={customerGoogleLogin}><span>G</span> Continue with Google</button>
+                {message && <p className="account-error">{message}</p>}
+              </>
+            )}
+          </section>
+        </div>
+      )}
+      {showMenu && (
+        <div className="account-overlay" onClick={() => setShowMenu(false)}>
+          <section className="account-panel menu-panel" onClick={e => e.stopPropagation()}>
+            <button className="account-close" onClick={() => setShowMenu(false)} aria-label="Close menu">×</button>
+            <p className="eyebrow">CORE KITS</p><h2>Menu</h2>
+            <a href="#" onClick={() => setShowMenu(false)}>⌂　Home</a>
+            <a href="#shop" onClick={() => setShowMenu(false)}>⚽　Shop Collection</a>
+            <a href="#tracking" onClick={() => setShowMenu(false)}>▣　Track Order</a>
+            <button onClick={() => { setShowMenu(false); setShowAccount(true); }}>♙　My Account</button>
+            <a href={`https://wa.me/${WA}`} target="_blank" rel="noreferrer">☏　Contact Us</a>
+          </section>
+        </div>
+      )}
       {showLogin && (
         <div className="modal">
           <div className="modal-content">
