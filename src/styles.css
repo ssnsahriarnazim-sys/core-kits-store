@@ -604,3 +604,100 @@ footer small { font-size: 9px; color: #8291a8; }
 body {
   padding-bottom: 85px;
 }
+
+
+/* CORE KITS account and menu panels */
+.floating-nav button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 19px;
+  padding: 0 8px;
+}
+.floating-nav button span {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  color: #8fc7ff;
+}
+.account-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 5, 15, .78);
+  backdrop-filter: blur(8px);
+}
+.account-panel {
+  position: relative;
+  width: min(100%, 420px);
+  padding: 32px 24px 26px;
+  border: 1px solid #168cff66;
+  border-radius: 22px;
+  color: #fff;
+  background: linear-gradient(145deg, #101d35, #050b16);
+  box-shadow: 0 20px 70px #000a;
+}
+.account-panel h2 {
+  margin: 8px 0 18px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 32px;
+}
+.account-panel .eyebrow { color: #38a5ff; }
+.account-muted { color: #b8c9df; font-size: 13px; line-height: 1.6; }
+.account-email { display: block; overflow-wrap: anywhere; color: #fff; margin: 12px 0 20px; }
+.account-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 28px;
+}
+.google-login, .account-action {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid #168cff;
+  border-radius: 12px;
+  background: #087ff5;
+  color: #fff;
+  font-weight: 800;
+}
+.google-login span {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 9px;
+  border-radius: 50%;
+  background: #fff;
+  color: #087ff5;
+}
+.account-action { margin-top: 18px; background: transparent; }
+.account-link {
+  display: block;
+  margin-top: 18px;
+  color: #58b1ff;
+  font-weight: 700;
+}
+.account-error { color: #ff8b8b; font-size: 12px; overflow-wrap: anywhere; }
+.menu-panel > a, .menu-panel > button:not(.account-close) {
+  display: block;
+  width: 100%;
+  padding: 15px 4px;
+  border: 0;
+  border-bottom: 1px solid #ffffff20;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  text-decoration: none;
+  font: inherit;
+}
