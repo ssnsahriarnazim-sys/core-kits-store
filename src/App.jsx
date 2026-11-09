@@ -24,6 +24,8 @@ export default function App() {
 });
   const [editing, setEditing] = useState(null);
   const [photo, setPhoto] = useState(null);
+  const [photos, setPhotos] = useState([]);
+  const [existingImageUrls, setExistingImageUrls] = useState([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 const [orders, setOrders] = useState([]);
@@ -175,6 +177,8 @@ if (data) {
   });
   setEditing(null);
   setPhoto(null);
+  setPhotos([]);
+  setExistingImageUrls([]);  
   }
 
   async function saveProduct(e) {
@@ -185,22 +189,34 @@ if (data) {
     try {
       let image_url = form.image_url;
 
-      if (photo) {
-        const ext = photo.name.split('.').pop();
-        const path = `${Date.now()}.${ext}`;
+     let image_urls = [...existingImageUrls];
 
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(path, photo);
+if (photos.length > 0) {
+  for (const photo of photos) {
+    const ext = photo.name.split('.').pop();
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-        if (uploadError) throw uploadError;
+    const { error: uploadError } = await supabase.storage
+      .from('product-images')
+      .upload(path, photo);
 
-        const { data } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(path);
+    if (uploadError) throw uploadError;
 
-        image_url = data.publicUrl;
-      }
+    const { data } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(path);
+
+    image_urls.push(data.publicUrl);
+  }
+}
+
+if (image_urls.length > 0) {
+  image_url = image_urls[0];
+} else if (form.image_url) {
+  image_url = form.image_url;
+}
+
+
 
       const payload = {
         name: form.name,
@@ -211,7 +227,7 @@ if (data) {
         sizes: form.sizes.split(',').map(s => s.trim()).filter(Boolean),
         category_id: form.category_id || null,
         image_url,
-        image_urls: image_url ? [image_url] : [],
+        image_urls,
         is_active: true
       };
 
@@ -242,6 +258,11 @@ if (data) {
 
   function editProduct(p) {
     setEditing(p.id);
+    setExistingImageUrls(
+  p.image_urls?.length
+    ? p.image_urls
+    : p.image_url ? [p.image_url] : []
+);
     setForm({
       name: p.name || '',
       description: p.description || '',
@@ -253,6 +274,7 @@ sizes: (p.sizes || []).join(','),
       image_url: p.image_url || ''
     });
     setPhoto(null);
+    setPhotos([]);
     document.getElementById('admin-form')?.scrollIntoView({
       behavior: 'smooth'
     });
@@ -513,17 +535,18 @@ sizes: (p.sizes || []).join(','),
                       onChange={e => setForm({...form,category_id:e.target.value})}
                     >
                       <option value="">Select category</option>
-                      {categories.map(c =>
+                    <  {categories.map(c =>
                         <option key={c.id} value={c.id}>{c.name}</option>
                       )}
                     </select>
-
-                    <label>Product photo</label>
-                    <input className="search"
-                      type="file"
-                      accept="image/*"
-                      onChange={e => setPhoto(e.target.files?.[0] || null)}
-                    />
+<label>Product Photos (Up to 4)</label>
+<input
+  className="search"
+  type="file"
+  accept="image/*"
+  multiple
+  onChange={e => setPhotos(Array.from(e.target.files || []).slice(0, 4))}
+/>
 
                     <button className="admin-submit" disabled={loading}>
                       {loading ? 'SAVING...' : editing ? 'UPDATE PRODUCT' : 'ADD PRODUCT'}
@@ -666,10 +689,22 @@ const [orderId, setOrderId] = useState('');
   return (
     <article className="product">
       <div className="product-image">
-        {product.image_url
-          ? <img src={product.image_url} alt={product.name}/>
-          : <span>CORE KITS.</span>}
-      </div>
+  {product.image_urls?.length > 0 ? (
+    <div className="product-gallery">
+      {product.image_urls.map((url, index) => (
+        <img
+          key={index}
+          src={url}
+          alt={`${product.name} ${index + 1}`}
+        />
+      ))}
+    </div>
+  ) : product.image_url ? (
+    <img src={product.image_url} alt={product.name} />
+  ) : (
+    <span>CORE KITS.</span>
+  )}
+</div>
 
       <div className="product-info">
         <div>
