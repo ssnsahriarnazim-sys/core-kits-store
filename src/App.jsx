@@ -443,7 +443,12 @@ sizes: (p.sizes || []).join(','),
         <p>WEAR THE DIFFERENCE.</p>
         <small>© 2026 CORE KITS. ALL RIGHTS RESERVED.</small>
       </footer>
-
+<nav className="floating-nav">
+  <a href="#tracking">♙<span>MY ACCOUNT</span></a>
+  <a href="#shop">🛒<span>CART</span></a>
+  <a href="#shop">⚽<span>SHOP</span></a>
+  <a href="#">☰<span>MENU</span></a>
+</nav>
       {showLogin && (
         <div className="modal">
           <div className="modal-content">
