@@ -470,3 +470,31 @@ footer small { font-size: 9px; color: #8291a8; }
   background: #FFFFFF;
   color: #101D35;
 }
+.product-price {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.original-price {
+  color: #888;
+  text-decoration: line-through;
+  font-size: 13px;
+}
+
+.product-price strong {
+  color: #087cff;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.discount-badge {
+  background: #087cff;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 800;
+}
