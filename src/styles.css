@@ -519,3 +519,49 @@ footer small { font-size: 9px; color: #8291a8; }
   object-fit: cover;
   scroll-snap-align: start;
 }
+/* CORE KITS - Dark Premium Hero */
+.hero {
+  min-height: 570px;
+  padding: 100px 9% 35px;
+  background:
+    radial-gradient(ellipse at 80% 45%, #0755a8 0%, transparent 38%),
+    linear-gradient(120deg, #050b16 0%, #0b1729 60%, #061d3b 100%);
+  color: #fff;
+}
+
+.hero::after {
+  color: rgba(30, 144, 255, .09);
+}
+
+.eyebrow {
+  color: #38a5ff;
+}
+
+.hero h1 {
+  color: #fff;
+}
+
+.hero h1 span {
+  color: #168cff;
+}
+
+.hero > p:not(.eyebrow) {
+  color: #b8c9df;
+}
+
+.shop-btn {
+  background: #087ff5;
+  color: #fff;
+  border: 1px solid #168cff;
+  transition: .25s ease;
+}
+
+.shop-btn:hover {
+  background: #fff;
+  color: #087ff5;
+}
+
+.hero-bottom {
+  border-color: #168cff55;
+  color: #78baff;
+}
