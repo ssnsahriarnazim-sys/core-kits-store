@@ -535,7 +535,7 @@ sizes: (p.sizes || []).join(','),
                       onChange={e => setForm({...form,category_id:e.target.value})}
                     >
                       <option value="">Select category</option>
-                    <  {categories.map(c =>
+                      {categories.map(c =>
                         <option key={c.id} value={c.id}>{c.name}</option>
                       )}
                     </select>
