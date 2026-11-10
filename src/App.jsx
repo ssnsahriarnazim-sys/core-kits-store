@@ -42,11 +42,33 @@ export default function App() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 const [orders, setOrders] = useState([]);
+const [customerOrders, setCustomerOrders] = useState([]);
+const [customerOrdersLoading, setCustomerOrdersLoading] = useState(false);
 const [orderLoading, setOrderLoading] = useState(false);
  const [trackingId, setTrackingId] = useState('');
 const [trackingPhone, setTrackingPhone] = useState('');
 const [trackedOrder, setTrackedOrder] = useState(null);
 const [trackingLoading, setTrackingLoading] = useState(false);
+  useEffect(() => {
+    if (!customer?.id) {
+      setCustomerOrders([]);
+      return;
+    }
+    loadCustomerOrders();
+  }, [customer?.id]);
+
+  async function loadCustomerOrders() {
+    if (!customer?.id) return;
+    setCustomerOrdersLoading(true);
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('customer_id', customer.id)
+      .order('created_at', { ascending: false });
+    if (!error) setCustomerOrders(data || []);
+    setCustomerOrdersLoading(false);
+  }
+
   useEffect(() => {
     loadProducts();
     loadCategories();
@@ -76,18 +98,24 @@ const [trackingLoading, setTrackingLoading] = useState(false);
   }, []);
 async function loadOrders() {
   setOrderLoading(true);
-
   const { data, error } = await supabase
     .from('orders')
     .select('*')
     .order('created_at', { ascending: false });
-
   if (error) {
     setMessage(error.message);
   } else {
-    setOrders(data || []);
+    const orderRows = data || [];
+    if (orderRows.length) {
+      const { data: itemRows, error: itemError } = await supabase
+        .from('order_items').select('*').in('order_id', orderRows.map(order => order.id));
+      const grouped = {};
+      if (!itemError) (itemRows || []).forEach(item => {
+        (grouped[item.order_id] ||= []).push(item);
+      });
+      setOrders(orderRows.map(order => ({ ...order, order_items: grouped[order.id] || [] })));
+    } else setOrders([]);
   }
-
   setOrderLoading(false);
 }
 async function trackOrder(e) {
@@ -386,7 +414,11 @@ sizes: (p.sizes || []).join(','),
     const {data, error} = await supabase.from('orders').insert({
       customer_name: checkoutName.trim(),
       phone: checkoutPhone.trim(),
-      address: `${checkoutAddress.trim()} | Delivery: ${deliveryArea === 'inside' ? 'Inside Noakhali' : 'Outside Noakhali'} (৳${deliveryFee})`,
+      address: checkoutAddress.trim(),
+      delivery_area: deliveryArea,
+      delivery_fee: deliveryFee,
+      subtotal: cartSubtotal,
+      customer_id: customer?.id || null,
       product_id: cartItems.length === 1 ? cartItems[0].product.id : null,
       product_name: itemNames,
       size: cartItems.map(item => item.size).join(', '),
@@ -395,11 +427,19 @@ sizes: (p.sizes || []).join(','),
       total_price: checkoutTotal,
       status: 'Pending'
     }).select('id').single();
-    setCheckoutBusy(false);
     if (error) {
+      setCheckoutBusy(false);
       setMessage('Order failed: ' + error.message);
       return;
     }
+    const itemPayload = cartItems.map(item => ({
+      order_id: data.id, product_id: item.product.id, product_name: item.product.name,
+      size: item.size, quantity: item.quantity, unit_price: Number(item.product.price || 0),
+      line_total: Number(item.product.price || 0) * item.quantity
+    }));
+    const { error: itemsError } = await supabase.from('order_items').insert(itemPayload);
+    setCheckoutBusy(false);
+    if (itemsError) setMessage('Order placed, but item details need database setup: ' + itemsError.message);
     setCheckoutResult(data.id);
     setCartItems([]);
     setShowCheckout(false);
@@ -628,6 +668,17 @@ sizes: (p.sizes || []).join(','),
                 <p className="account-muted">You are signed in as</p>
                 <strong className="account-email">{customer.email || 'Google account'}</strong>
                 <a className="account-link" href="#tracking" onClick={() => setShowAccount(false)}>Track an order →</a>
+                <div className="customer-order-history">
+                  <h3>My Order History</h3>
+                  {customerOrdersLoading ? <p className="account-muted">Loading your orders...</p> :
+                    customerOrders.length ? customerOrders.map(order => (
+                      <div className="cart-line" key={order.id}>
+                        <div><strong>{order.product_name}</strong><small>Order: {order.id}</small>
+                          <small>{new Date(order.created_at).toLocaleDateString()} · {order.status}</small></div>
+                        <strong>৳{order.total_price}</strong>
+                      </div>
+                    )) : <p className="account-muted">No orders linked to this account yet. Sign in before checkout to save future orders here.</p>}
+                </div>
                 <button className="account-action" onClick={logout}>LOG OUT</button>
               </>
             ) : (
@@ -798,8 +849,11 @@ sizes: (p.sizes || []).join(','),
     <p><strong>Customer:</strong> {o.customer_name}</p>
     <p><strong>Phone:</strong> {o.phone}</p>
     <p><strong>Address:</strong> {o.address}</p>
-    <p><strong>Size:</strong> {o.size}</p>
-    <p><strong>Quantity:</strong> {o.quantity}</p>
+    {o.order_items?.length ? <div><strong>Items ({o.order_items.length})</strong>
+      {o.order_items.map(item => <p key={item.id || item.product_name}>{item.product_name} — Size {item.size} × {item.quantity} · ৳{item.line_total}</p>)}
+    </div> : <><p><strong>Items:</strong> {o.product_name}</p><p><strong>Size:</strong> {o.size}</p><p><strong>Quantity:</strong> {o.quantity}</p></>}
+    <p><strong>Subtotal:</strong> ৳{o.subtotal ?? '—'}</p>
+    <p><strong>Delivery:</strong> ৳{o.delivery_fee ?? '—'}</p>
     <p><strong>Total:</strong> ৳{o.total_price ?? 'Not set'}</p>
     <p><strong>Date:</strong> {new Date(o.created_at).toLocaleString()}</p>
 
