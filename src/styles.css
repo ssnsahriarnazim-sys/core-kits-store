@@ -701,3 +701,77 @@ body {
   text-decoration: none;
   font: inherit;
 }
+
+
+/* PRIMEKITS-inspired CORE KITS storefront — dark electric edition */
+:root{color:#f4f8ff;background:#070d18}
+body{background:#070d18;color:#f4f8ff}
+.navbar{height:76px;padding:0 5%;background:#050a13;border-bottom:1px solid #172c46;position:sticky;top:0;z-index:100}
+.logo{color:#f5f8ff;font-size:29px;letter-spacing:-1.4px}
+.logo span{color:#168cff}
+.header-icon{border:0;background:transparent;color:#eaf4ff;font-size:28px;line-height:1;padding:8px}
+.promo-banner{margin:22px auto 0;width:92%;min-height:245px;border:1px solid #17385c;border-radius:22px;overflow:hidden;position:relative;display:grid;grid-template-columns:1.1fr .9fr;background:radial-gradient(circle at 78% 50%,#0756a4 0,transparent 42%),linear-gradient(115deg,#030812,#0a1b31 65%,#06142a)}
+.promo-copy{padding:30px 34px;position:relative;z-index:2}
+.promo-copy .eyebrow{margin:0 0 10px;color:#48aaff}
+.promo-copy h1{font:700 clamp(34px,6vw,62px)/.95 'Oswald',sans-serif;margin:0;color:#fff}
+.promo-copy h1 span{color:#168cff}
+.promo-copy>p:not(.eyebrow){color:#b8cce3;font-size:13px}
+.promo-copy .shop-btn{margin-top:8px;padding:12px 16px;font-size:10px}
+.promo-code{display:flex;align-items:center;gap:9px;margin-top:18px;color:#9fcfff;font-size:9px;letter-spacing:1px}
+.promo-code strong{background:#087ff5;color:#fff;border-radius:5px;padding:7px 10px;font-size:11px}
+.promo-art{position:relative;min-height:220px;display:flex;align-items:center;justify-content:center}
+.promo-watermark{position:absolute;font:700 190px 'Oswald',sans-serif;color:#168cff18;right:10px;top:5px}
+.promo-shirt{position:absolute;width:42%;height:78%;object-fit:contain;filter:drop-shadow(0 14px 15px #0009)}
+.promo-shirt-1{left:4%;transform:rotate(-13deg) scale(.85)}
+.promo-shirt-2{left:32%;z-index:2;transform:translateY(-8px) scale(1.06)}
+.promo-shirt-3{right:0;transform:rotate(13deg) scale(.83)}
+.designer-strip{width:92%;margin:22px auto 38px;display:flex;min-height:88px;overflow-x:auto;border:1px solid #24415f;border-radius:18px;background:#0b1728;scrollbar-width:none}
+.designer-strip::-webkit-scrollbar{display:none}
+.designer-label,.designer-strip button{flex:1 0 105px;display:grid;place-content:center;text-align:center;border:0;border-right:1px solid #24415f;background:transparent;color:#b8cce3;font-size:12px;font-weight:700;letter-spacing:1px}
+.designer-label{font:500 18px 'Oswald',sans-serif;color:#91a9c5}
+.designer-strip button.selected,.designer-strip button:focus{color:#38a5ff;background:#102b49}
+.featured-section,.collection-section{width:92%;margin:0 auto 48px}
+.collection-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:20px}
+.collection-heading h2{font:600 clamp(23px,4vw,32px) 'DM Sans',sans-serif;margin:0;color:#f5f8ff}
+.collection-heading h2 span{color:#168cff}
+.collection-heading>a{border:1px solid #3c91df;border-radius:30px;padding:12px 22px;color:#eaf4ff;font-weight:700;white-space:nowrap}
+.featured-products{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.shop{padding:58px 4%;background:#070d18}
+.section-heading h2{color:#f4f8ff}
+.section-heading>span{color:#7f9bb9}
+.search{background:#0d1b2e;border:1px solid #25415e;color:#fff;border-radius:12px}
+.search::placeholder{color:#7990aa}
+.search:focus{border-color:#168cff}
+.filters button{background:#0d1b2e;border:1px solid #25415e;color:#b8cce3;border-radius:30px}
+.filters button.active{background:#087ff5;border-color:#087ff5;color:white}
+.product{background:linear-gradient(160deg,#111f33,#091321);border:1px solid #203a58;border-radius:20px;padding:10px;overflow:hidden;box-shadow:0 10px 28px #0003}
+.product-image{border-radius:15px;background:#0a1728;aspect-ratio:4/4.5}
+.product-info{color:#f4f8ff;padding:14px 5px}
+.product-info h3{font-size:14px;line-height:1.45;color:#f5f8ff}
+.product-info p{color:#78a2cb}
+.product-price strong{color:#40a6ff}
+.original-price{color:#70849b}
+.discount-badge{background:#087ff5}
+.product-actions select{background:#0b1728;color:#eaf4ff;border:1px solid #2b4c70;border-radius:9px}
+.product-actions button{background:#087ff5;color:#fff;border-radius:9px;min-height:40px}
+.collection-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.collection-tiles button{min-height:130px;text-align:left;padding:18px;border:1px solid #214365;border-radius:16px;background:linear-gradient(145deg,#102a47,#081321);color:#fff;display:flex;flex-direction:column;justify-content:space-between}
+.collection-tiles button span{color:#168cff;font:600 13px 'Oswald',sans-serif}
+.collection-tiles button strong{font:600 18px 'Oswald',sans-serif}
+.collection-tiles button small{font-size:8px;letter-spacing:1px;color:#8dbbe8}
+.tracking-section{padding:20px 4% 55px;background:#070d18}
+.tracking-box{max-width:760px;margin:0 auto;background:linear-gradient(145deg,#102746,#07111f);border:1px solid #1b4774;border-radius:20px}
+.tracking-box input{background:#071321;color:#fff;border-color:#2b4c70}
+.tracking-box button{background:#087ff5;color:#fff;border-radius:10px}
+footer{background:#030811;border-top:1px solid #173451;color:#fff}
+.floating-nav{background:rgba(3,9,18,.96);border:1px solid #168cff66;box-shadow:0 10px 38px #000b}
+.account-panel{background:linear-gradient(145deg,#102746,#050b14);color:#fff}
+.modal-content{background:#0b1728;color:#fff;border:1px solid #24415f;border-radius:16px}
+.modal-content .search{background:#071321;color:#fff;border-color:#24415f}
+.order-form{background:#081525;border:1px solid #25415e}
+.order-form input,.order-form textarea{background:#0d1b2e;color:#fff;border-color:#294969}
+.order-form input::placeholder,.order-form textarea::placeholder{color:#7990aa}
+.order-form button{background:#087ff5;color:#fff;border:0}
+.empty{color:#8ca6c2}
+@media(max-width:800px){.featured-products{grid-template-columns:repeat(2,minmax(0,1fr))}.collection-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.promo-banner{grid-template-columns:1fr .75fr}.promo-copy{padding:24px 18px}.promo-art{min-height:200px}.designer-strip{margin-bottom:30px}}
+@media(max-width:480px){.promo-banner{width:92%;min-height:205px;grid-template-columns:1fr .58fr}.promo-copy{padding:22px 14px}.promo-copy h1{font-size:34px}.promo-copy>p:not(.eyebrow){font-size:11px}.promo-code{gap:5px;flex-wrap:wrap}.promo-art{min-height:180px}.promo-shirt{width:60%;height:70%}.promo-shirt-1{left:-4%}.promo-shirt-2{left:23%}.promo-shirt-3{right:-8%}.designer-label,.designer-strip button{flex-basis:94px}.featured-section,.collection-section{width:92%}.featured-products{gap:10px}.product{padding:8px;border-radius:15px}.product-info h3{font-size:12px}.collection-heading>a{padding:10px 15px;font-size:12px}.collection-tiles button{min-height:115px;padding:13px}}
