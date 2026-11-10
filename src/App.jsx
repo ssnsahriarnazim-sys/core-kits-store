@@ -8,6 +8,7 @@ export default function App() {
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
+  const [activeOrderProductId, setActiveOrderProductId] = useState(null);
   const [admin, setAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
@@ -387,7 +388,7 @@ sizes: (p.sizes || []).join(','),
       <section className="featured-section">
         <div className="collection-heading"><h2><span>Customer</span> Choice</h2><a href="#shop">More　›</a></div>
         <div className="products featured-products">
-          {filtered.slice(0,4).map(p => <ProductCard key={p.id} product={p} order={order}/>)}
+          {filtered.slice(0,4).map(p => <ProductCard key={`featured-${p.id}`} product={p} order={order} canOrder={false}/>)}
         </div>
       </section>
 
@@ -470,7 +471,7 @@ sizes: (p.sizes || []).join(','),
 
         <div className="products">
           {filtered.map(p => (
-            <ProductCard key={p.id} product={p} order={order}/>
+            <ProductCard key={p.id} product={p} order={order} showOrder={activeOrderProductId === p.id} onOrderOpen={() => setActiveOrderProductId(p.id)} onOrderClose={() => setActiveOrderProductId(null)}/>
           ))}
         </div>
 
@@ -722,9 +723,8 @@ sizes: (p.sizes || []).join(','),
   );
 }
 
-function ProductCard({product, order}) {
+function ProductCard({product, order, canOrder = true, showOrder = false, onOrderOpen = () => {}, onOrderClose = () => {}}) {
   const [size, setSize] = useState(product.sizes?.[0] || '');
-  const [showOrder, setShowOrder] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
@@ -762,7 +762,7 @@ const [orderId, setOrderId] = useState('');
  } else {
   setOrderId(order.id);
   alert('Order placed successfully! Your Order ID: ' + order.id);
-  setShowOrder(false);
+  onOrderClose();
   setCustomerName('');
   setPhone('');
   setAddress('');
@@ -841,9 +841,9 @@ const [orderId, setOrderId] = useState('');
 
         <button
           disabled={product.stock < 1}
-          onClick={() => setShowOrder(true)}
+          onClick={() => canOrder ? onOrderOpen() : document.getElementById('shop')?.scrollIntoView({behavior:'smooth'})}
         >
-          ORDER NOW ↗
+          {canOrder ? 'ORDER NOW ↗' : 'VIEW IN SHOP ↗'}
         </button>
       </div>
 
@@ -887,7 +887,7 @@ const [orderId, setOrderId] = useState('');
 
           <button
             type="button"
-            onClick={() => setShowOrder(false)}
+            onClick={onOrderClose}
           >
             CANCEL
           </button>
