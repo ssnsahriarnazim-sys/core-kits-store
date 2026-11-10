@@ -371,8 +371,10 @@ sizes: (p.sizes || []).join(','),
           <div className="promo-code"><small>USE CODE</small><strong>COREKITS150</strong><small>FOR YOUR NEXT ORDER</small></div>
         </div>
         <div className="promo-art" aria-hidden="true">
-          {products.filter(p => p.image_url || p.image_urls?.length).slice(0,3).map((p,i) => <img key={p.id} src={p.image_urls?.[0] || p.image_url} alt="" className={`promo-shirt promo-shirt-${i+1}`} />)}
-          <span className="promo-watermark">CK</span>
+          <div className="promo-orbit"></div>
+          <div className="promo-kit-mark"><span>26</span><strong>/</strong><span>27</span></div>
+          <div className="promo-ball">⚽</div>
+          <div className="promo-side-label">MATCH<br/>DAY<br/><b>COLLECTION</b></div>
         </div>
       </section>
 
