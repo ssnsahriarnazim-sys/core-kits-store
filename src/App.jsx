@@ -25,6 +25,9 @@ export default function App() {
   const [customer, setCustomer] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpBusy, setOtpBusy] = useState(false);
   const [form, setForm] = useState({
   name: '',
   description: '',
@@ -212,13 +215,42 @@ if (data) {
     setLoading(false);
   }
 
-  async function customerGoogleLogin() {
+  async function sendCustomerOtp(e) {
+    e.preventDefault();
+    setOtpBusy(true);
     setMessage('');
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin }
+    const cleanEmail = email.trim().toLowerCase();
+    const { error } = await supabase.auth.signInWithOtp({
+      email: cleanEmail,
+      options: { shouldCreateUser: true }
     });
-    if (error) setMessage(error.message);
+    if (error) {
+      setMessage(error.message);
+    } else {
+      setEmail(cleanEmail);
+      setOtpSent(true);
+      setMessage('A 6-digit verification code has been sent to your Gmail.');
+    }
+    setOtpBusy(false);
+  }
+
+  async function verifyCustomerOtp(e) {
+    e.preventDefault();
+    setOtpBusy(true);
+    setMessage('');
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim().toLowerCase(),
+      token: otpCode.trim(),
+      type: 'email'
+    });
+    if (error) {
+      setMessage(error.message);
+    } else {
+      setOtpSent(false);
+      setOtpCode('');
+      setMessage('Login successful!');
+    }
+    setOtpBusy(false);
   }
 
   async function logout() {
@@ -683,8 +715,20 @@ sizes: (p.sizes || []).join(','),
               </>
             ) : (
               <>
-                <p className="account-muted">Sign in with your Google account to access your CORE KITS account.</p>
-                <button className="google-login" onClick={customerGoogleLogin}><span>G</span> Continue with Google</button>
+                <p className="account-muted">Enter your Gmail to receive a one-time verification code and access your CORE KITS account.</p>
+                {!otpSent ? (
+                  <form onSubmit={sendCustomerOtp}>
+                    <input className="search" type="email" placeholder="Enter your Gmail address" value={email} onChange={e => setEmail(e.target.value)} required />
+                    <button className="account-action" disabled={otpBusy}>{otpBusy ? 'SENDING CODE...' : 'SEND LOGIN CODE'}</button>
+                  </form>
+                ) : (
+                  <form onSubmit={verifyCustomerOtp}>
+                    <p className="account-muted">Enter the 6-digit code sent to <strong>{email}</strong>.</p>
+                    <input className="search" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength="6" placeholder="Enter 6-digit code" value={otpCode} onChange={e => setOtpCode(e.target.value.replace(/\\D/g, '').slice(0, 6))} required />
+                    <button className="account-action" disabled={otpBusy || otpCode.length !== 6}>{otpBusy ? 'VERIFYING...' : 'VERIFY & LOG IN'}</button>
+                    <button type="button" className="detail-buy-now" disabled={otpBusy} onClick={() => { setOtpSent(false); setOtpCode(''); setMessage(''); }}>CHANGE GMAIL / RESEND CODE</button>
+                  </form>
+                )}
                 {message && <p className="account-error">{message}</p>}
               </>
             )}
