@@ -8,7 +8,16 @@ export default function App() {
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
-  const [activeOrderCardIndex, setActiveOrderCardIndex] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [cartItems, setCartItems] = useState([]);
+  const [showCart, setShowCart] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [checkoutName, setCheckoutName] = useState('');
+  const [checkoutPhone, setCheckoutPhone] = useState('');
+  const [checkoutAddress, setCheckoutAddress] = useState('');
+  const [deliveryArea, setDeliveryArea] = useState('inside');
+  const [checkoutBusy, setCheckoutBusy] = useState(false);
+  const [checkoutResult, setCheckoutResult] = useState('');
   const [admin, setAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
@@ -340,13 +349,58 @@ sizes: (p.sizes || []).join(','),
     }
   }
 
-  function order(p, size) {
-    const message = `Assalamu Alaikum! I want to order:\n${p.name}\nSize: ${size}\nPlease share the price.`;
+  function addToCart(product, size, quantity) {
+    setCartItems(current => {
+      const existing = current.find(item => item.product.id === product.id && item.size === size);
+      if (existing) return current.map(item => item === existing ? {...item, quantity: Math.min(Number(product.stock || 99), item.quantity + quantity)} : item);
+      return [...current, {product, size, quantity}];
+    });
+    setSelectedProduct(null);
+    setMessage('Added to cart!');
+  }
 
-    window.open(
-      `https://wa.me/${WA}?text=${encodeURIComponent(message)}`,
-      '_blank'
-    );
+  function updateCartQuantity(productId, size, quantity) {
+    if (quantity < 1) {
+      setCartItems(current => current.filter(item => !(item.product.id === productId && item.size === size)));
+      return;
+    }
+    setCartItems(current => current.map(item => item.product.id === productId && item.size === size ? {...item, quantity: Math.min(Number(item.product.stock || 99), quantity)} : item));
+  }
+
+  const cartSubtotal = cartItems.reduce((sum,item) => sum + Number(item.product.price || 0) * item.quantity, 0);
+  const deliveryFee = deliveryArea === 'inside' ? 70 : 130;
+  const checkoutTotal = cartSubtotal + deliveryFee;
+
+  async function placeCheckoutOrder(e) {
+    e.preventDefault();
+    if (!cartItems.length) return;
+    setCheckoutBusy(true);
+    const itemNames = cartItems.map(item => `${item.product.name} (Size: ${item.size} × ${item.quantity})`).join(' | ');
+    const totalQuantity = cartItems.reduce((sum,item) => sum + item.quantity, 0);
+    const {data, error} = await supabase.from('orders').insert({
+      customer_name: checkoutName.trim(),
+      phone: checkoutPhone.trim(),
+      address: `${checkoutAddress.trim()} | Delivery: ${deliveryArea === 'inside' ? 'Inside Noakhali' : 'Outside Noakhali'} (৳${deliveryFee})`,
+      product_id: cartItems.length === 1 ? cartItems[0].product.id : null,
+      product_name: itemNames,
+      size: cartItems.map(item => item.size).join(', '),
+      quantity: totalQuantity,
+      unit_price: null,
+      total_price: checkoutTotal,
+      status: 'Pending'
+    }).select('id').single();
+    setCheckoutBusy(false);
+    if (error) {
+      setMessage('Order failed: ' + error.message);
+      return;
+    }
+    setCheckoutResult(data.id);
+    setCartItems([]);
+    setShowCheckout(false);
+    setShowCart(false);
+    setCheckoutName('');
+    setCheckoutPhone('');
+    setCheckoutAddress('');
   }
 
   const filtered = products.filter(p =>
@@ -388,7 +442,7 @@ sizes: (p.sizes || []).join(','),
       <section className="featured-section">
         <div className="collection-heading"><h2><span>Customer</span> Choice</h2><a href="#shop">More　›</a></div>
         <div className="products featured-products">
-          {filtered.slice(0,4).map(p => <ProductCard key={`featured-${p.id}`} product={p} order={order} canOrder={false}/>)}
+          {filtered.slice(0,4).map(p => <ProductCard key={`featured-${p.id}`} product={p} onOpen={() => setSelectedProduct(p)}/>)}
         </div>
       </section>
 
@@ -471,7 +525,7 @@ sizes: (p.sizes || []).join(','),
 
         <div className="products">
           {filtered.map((p, index) => (
-            <ProductCard key={`${p.id}-shop-${index}`} product={p} order={order} showOrder={activeOrderCardIndex === index} onOrderOpen={() => setActiveOrderCardIndex(index)} onOrderClose={() => setActiveOrderCardIndex(null)}/>
+            <ProductCard key={`${p.id}-shop-${index}`} product={p} onOpen={() => setSelectedProduct(p)}/>
           ))}
         </div>
 
@@ -489,10 +543,74 @@ sizes: (p.sizes || []).join(','),
       </footer>
 <nav className="floating-nav">
   <button type="button" onClick={() => setShowAccount(true)}>♙<span>MY ACCOUNT</span></button>
-  <button type="button" onClick={() => setMessage('Cart feature is not available yet.')}>🛒<span>CART</span></button>
+  <button type="button" onClick={() => setShowCart(true)}>🛒<span>CART {cartItems.reduce((n,item)=>n+item.quantity,0) || ''}</span></button>
   <a href="#shop">⚽<span>SHOP</span></a>
   <button type="button" onClick={() => setShowMenu(true)}>☰<span>MENU</span></button>
 </nav>
+      {selectedProduct && (
+        <div className="account-overlay product-overlay" onClick={() => setSelectedProduct(null)}>
+          <section className="account-panel product-detail-panel" onClick={e => e.stopPropagation()}>
+            <button className="account-close" onClick={() => setSelectedProduct(null)}>×</button>
+            <div className="detail-gallery">
+              {(selectedProduct.image_urls?.length ? selectedProduct.image_urls : selectedProduct.image_url ? [selectedProduct.image_url] : []).map((url,i)=><img key={i} src={url} alt={selectedProduct.name}/>)}
+            </div>
+            <p className="eyebrow">CORE KITS PRODUCT</p>
+            <h2>{selectedProduct.name}</h2>
+            <p>{selectedProduct.description || 'Premium football kit. Wear your passion.'}</p>
+            <div className="detail-price">৳{selectedProduct.price}{selectedProduct.original_price > selectedProduct.price && <del>৳{selectedProduct.original_price}</del>}</div>
+            <ProductDetailActions product={selectedProduct} onAdd={addToCart}/>
+          </section>
+        </div>
+      )}
+      {showCart && (
+        <div className="account-overlay" onClick={() => setShowCart(false)}>
+          <section className="account-panel cart-panel" onClick={e => e.stopPropagation()}>
+            <button className="account-close" onClick={() => setShowCart(false)}>×</button>
+            <p className="eyebrow">YOUR SELECTION</p><h2>Shopping Cart</h2>
+            {!cartItems.length ? <p className="account-muted">Your cart is empty.</p> : cartItems.map(item=>(
+              <div className="cart-line" key={item.product.id + item.size}>
+                <div><strong>{item.product.name}</strong><small>Size: {item.size} · ৳{item.product.price}</small></div>
+                <input aria-label="Quantity" type="number" min="1" max={item.product.stock} value={item.quantity} onChange={e=>updateCartQuantity(item.product.id,item.size,Number(e.target.value))}/>
+                <button onClick={()=>updateCartQuantity(item.product.id,item.size,0)}>Remove</button>
+              </div>
+            ))}
+            {cartItems.length>0 && <>
+              <div className="cart-total"><span>Subtotal</span><strong>৳{cartSubtotal}</strong></div>
+              <button className="account-action" onClick={()=>{setShowCart(false);setShowCheckout(true);}}>PROCEED TO CHECKOUT</button>
+            </>}
+          </section>
+        </div>
+      )}
+      {showCheckout && (
+        <div className="account-overlay" onClick={() => setShowCheckout(false)}>
+          <section className="account-panel checkout-panel" onClick={e => e.stopPropagation()}>
+            <button className="account-close" onClick={() => setShowCheckout(false)}>×</button>
+            <p className="eyebrow">SECURE ORDER</p><h2>Complete Your Order</h2>
+            <form onSubmit={placeCheckoutOrder}>
+              <input className="search" placeholder="Your full name" value={checkoutName} onChange={e=>setCheckoutName(e.target.value)} required/>
+              <input className="search" placeholder="Phone number" value={checkoutPhone} onChange={e=>setCheckoutPhone(e.target.value)} required/>
+              <textarea className="search" placeholder="Full delivery address" value={checkoutAddress} onChange={e=>setCheckoutAddress(e.target.value)} required/>
+              <label>Delivery area</label>
+              <select className="search" value={deliveryArea} onChange={e=>setDeliveryArea(e.target.value)}><option value="inside">Inside Noakhali — ৳70</option><option value="outside">Outside Noakhali — ৳130</option></select>
+              <div className="cart-total"><span>Subtotal</span><strong>৳{cartSubtotal}</strong></div>
+              <div className="cart-total"><span>Delivery</span><strong>৳{deliveryFee}</strong></div>
+              <div className="cart-total grand-total"><span>Total</span><strong>৳{checkoutTotal}</strong></div>
+              <button className="account-action" disabled={checkoutBusy}>{checkoutBusy ? 'PLACING ORDER...' : 'CONFIRM ORDER'}</button>
+            </form>
+          </section>
+        </div>
+      )}
+      {checkoutResult && (
+        <div className="account-overlay" onClick={()=>setCheckoutResult('')}>
+          <section className="account-panel" onClick={e=>e.stopPropagation()}>
+            <button className="account-close" onClick={()=>setCheckoutResult('')}>×</button>
+            <p className="eyebrow">ORDER RECEIVED</p><h2>Thank you!</h2>
+            <p>Your Order ID:</p><strong>{checkoutResult}</strong>
+            <p className="account-muted">Save this ID and your phone number to track the order.</p>
+            <a className="account-link" href="#tracking" onClick={()=>setCheckoutResult('')}>Track your order →</a>
+          </section>
+        </div>
+      )}
       {showAccount && (
         <div className="account-overlay" onClick={() => setShowAccount(false)}>
           <section className="account-panel" onClick={e => e.stopPropagation()}>
@@ -723,184 +841,37 @@ sizes: (p.sizes || []).join(','),
   );
 }
 
-function ProductCard({product, order, canOrder = true, showOrder = false, onOrderOpen = () => {}, onOrderClose = () => {}}) {
-  const [size, setSize] = useState(product.sizes?.[0] || '');
-  const [customerName, setCustomerName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [quantity, setQuantity] = useState(1);
-const [orderId, setOrderId] = useState('');
-  async function submitOrder(e) {
-    e.preventDefault();
-
-    if (product.stock < 1 || Number(quantity) > product.stock) {
-      alert('Not enough stock available!');
-      return;
-    }
-
-    const { data: order, error } = await supabase
-  .from('orders')
-  .insert({
-    customer_name: customerName,
-    phone: phone,
-    address: address,
-    product_id: product.id,
-    product_name: product.name,
-    size: size,
-    quantity: Number(quantity),
-    unit_price: product.price || null,
-    total_price: product.price
-      ? Number(product.price) * Number(quantity)
-      : null,
-    status: 'Pending'
-  })
-  .select('id')
-  .single();
-
-    if (error) {
-      alert('Order failed: ' + error.message);
- } else {
-  setOrderId(order.id);
-  alert('Order placed successfully! Your Order ID: ' + order.id);
-  onOrderClose();
-  setCustomerName('');
-  setPhone('');
-  setAddress('');
-  setQuantity(1);
-    }
-  }
-
+function ProductCard({product, onOpen}) {
   return (
-    <article className="product">
+    <article className="product product-clickable" onClick={onOpen} role="button" tabIndex={0} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOpen();}}}>
       <div className="product-image">
-  {product.image_urls?.length > 0 ? (
-    <div className="product-gallery">
-      {product.image_urls.map((url, index) => (
-        <img
-          key={index}
-          src={url}
-          alt={`${product.name} ${index + 1}`}
-        />
-      ))}
-    </div>
-  ) : product.image_url ? (
-    <img src={product.image_url} alt={product.name} />
-  ) : (
-    <span>CORE KITS.</span>
-  )}
-</div>
-
+        {product.image_urls?.length ? <img src={product.image_urls[0]} alt={product.name}/> : product.image_url ? <img src={product.image_url} alt={product.name}/> : <span>CORE KITS.</span>}
+      </div>
       <div className="product-info">
-        <div>
-          <h3>{product.name}</h3>
-          <p>
-            {product.stock > 0
-              ? `IN STOCK · ${product.stock} AVAILABLE`
-              : 'CHECK AVAILABILITY'}
-          </p>
+        <h3>{product.name}</h3>
+        <p>{product.stock > 0 ? `IN STOCK · ${product.stock} AVAILABLE` : 'CHECK AVAILABILITY'}</p>
+        <div className="product-price">
+          {product.original_price > product.price && <span className="original-price">৳{product.original_price}</span>}
+          <strong>{product.price ? `৳${product.price}` : 'Price on WhatsApp'}</strong>
+          {product.original_price > product.price && <span className="discount-badge">{Math.round(((product.original_price-product.price)/product.original_price)*100)}% OFF</span>}
         </div>
-
-        <strong>
-          <div className="product-price">
-  {product.original_price > product.price && (
-    <span className="original-price">
-      ৳{product.original_price}
-    </span>
-  )}
-
-  <strong>
-    {product.price
-      ? `৳${product.price}`
-      : 'Price on WhatsApp'}
-  </strong>
-
-  {product.original_price > product.price && (
-    <span className="discount-badge">
-      {Math.round(
-        ((product.original_price - product.price) /
-          product.original_price) * 100
-      )}% OFF
-    </span>
-  )}
-</div>
-        </strong>
+        <button type="button" className="view-product-button" onClick={e=>{e.stopPropagation();onOpen();}}>VIEW DETAILS ↗</button>
       </div>
-
-      <div className="product-actions">
-        <select
-          value={size}
-          onChange={e => setSize(e.target.value)}
-        >
-          {(product.sizes?.length
-            ? product.sizes
-            : ['Select size']
-          ).map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-
-        <button
-          disabled={product.stock < 1}
-          onClick={() => canOrder ? onOrderOpen() : document.getElementById('shop')?.scrollIntoView({behavior:'smooth'})}
-        >
-          {canOrder ? 'ORDER NOW ↗' : 'VIEW IN SHOP ↗'}
-        </button>
-      </div>
-
-      {showOrder && (
-        <form onSubmit={submitOrder} className="order-form">
-          <h3>Complete Your Order</h3>
-
-          <input
-            placeholder="Your full name"
-            value={customerName}
-            onChange={e => setCustomerName(e.target.value)}
-            required
-          />
-
-          <input
-            placeholder="Phone number"
-            value={phone}
-            onChange={e => setPhone(e.target.value)}
-            required
-          />
-
-          <textarea
-            placeholder="Delivery address"
-            value={address}
-            onChange={e => setAddress(e.target.value)}
-            required
-          />
-
-          <p>Selected size: {size}</p>
-
-          <input
-            type="number"
-            min="1"
-            max={product.stock}
-            value={quantity}
-            onChange={e => setQuantity(e.target.value)}
-            required
-          />
-
-          <button type="submit">CONFIRM ORDER</button>
-
-          <button
-            type="button"
-            onClick={onOrderClose}
-          >
-            CANCEL
-          </button>
-        </form>
-      )}
-      
-      {orderId && (
-        <div className="order-success">
-          <h3>Order placed successfully!</h3>
-          <p>Save your Order ID to track your order:</p>
-          <strong>{orderId}</strong>
-        </div>
-      )}
     </article>
   );
+}
+
+function ProductDetailActions({product,onAdd}) {
+  const [size,setSize]=useState(product.sizes?.[0] || '');
+  const [quantity,setQuantity]=useState(1);
+  return <div className="detail-actions">
+    <label>Choose size</label>
+    <select className="search" value={size} onChange={e=>setSize(e.target.value)}>
+      {(product.sizes?.length ? product.sizes : ['M','L','XL','XXL']).map(s=><option key={s} value={s}>{s}</option>)}
+    </select>
+    <label>Quantity</label>
+    <input className="search" type="number" min="1" max={product.stock || 1} value={quantity} onChange={e=>setQuantity(Math.max(1,Math.min(Number(product.stock)||1,Number(e.target.value)||1)))}/>
+    <button className="account-action" disabled={product.stock<1} onClick={()=>onAdd(product,size,quantity)}>ADD TO CART</button>
+    <p className="account-muted">Checkout from your cart when you're ready.</p>
+  </div>;
 }
