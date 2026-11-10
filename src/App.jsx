@@ -359,6 +359,12 @@ sizes: (p.sizes || []).join(','),
     setMessage('Added to cart!');
   }
 
+  function buyNow(product, size, quantity) {
+    setCartItems([{product, size, quantity}]);
+    setSelectedProduct(null);
+    setShowCheckout(true);
+  }
+
   function updateCartQuantity(productId, size, quantity) {
     if (quantity < 1) {
       setCartItems(current => current.filter(item => !(item.product.id === productId && item.size === size)));
@@ -558,7 +564,7 @@ sizes: (p.sizes || []).join(','),
             <h2>{selectedProduct.name}</h2>
             <p>{selectedProduct.description || 'Premium football kit. Wear your passion.'}</p>
             <div className="detail-price">৳{selectedProduct.price}{selectedProduct.original_price > selectedProduct.price && <del>৳{selectedProduct.original_price}</del>}</div>
-            <ProductDetailActions product={selectedProduct} onAdd={addToCart}/>
+            <ProductDetailActions product={selectedProduct} onAdd={addToCart} onBuyNow={buyNow}/>
           </section>
         </div>
       )}
@@ -861,7 +867,7 @@ function ProductCard({product, onOpen}) {
   );
 }
 
-function ProductDetailActions({product,onAdd}) {
+function ProductDetailActions({product,onAdd,onBuyNow}) {
   const [size,setSize]=useState(product.sizes?.[0] || '');
   const [quantity,setQuantity]=useState(1);
   return <div className="detail-actions">
@@ -872,6 +878,7 @@ function ProductDetailActions({product,onAdd}) {
     <label>Quantity</label>
     <input className="search" type="number" min="1" max={product.stock || 1} value={quantity} onChange={e=>setQuantity(Math.max(1,Math.min(Number(product.stock)||1,Number(e.target.value)||1)))}/>
     <button className="account-action" disabled={product.stock<1} onClick={()=>onAdd(product,size,quantity)}>ADD TO CART</button>
+    <button className="detail-buy-now" disabled={product.stock<1} onClick={()=>onBuyNow(product,size,quantity)}>BUY NOW ↗</button>
     <p className="account-muted">Checkout from your cart when you're ready.</p>
   </div>;
 }
