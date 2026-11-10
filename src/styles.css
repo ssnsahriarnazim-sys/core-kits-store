@@ -815,3 +815,27 @@ footer{background:#030811;border-top:1px solid #173451;color:#fff}
 .grand-total{font-size:19px;color:#fff}
 .checkout-panel form{display:grid;gap:12px}
 @media(max-width:480px){.cart-line{grid-template-columns:1fr 58px auto}.detail-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Keep the admin modal close control visible while the dashboard scrolls */
+.modal {
+  z-index: 2000 !important;
+}
+.modal-content .close {
+  position: fixed !important;
+  top: 14px !important;
+  right: 14px !important;
+  z-index: 2002 !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 44px !important;
+  height: 44px !important;
+  padding: 0 !important;
+  border: 1px solid #168cff !important;
+  border-radius: 50% !important;
+  background: #101d35 !important;
+  color: #fff !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  box-shadow: 0 4px 18px #0008 !important;
+}
