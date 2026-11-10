@@ -25,9 +25,8 @@ export default function App() {
   const [customer, setCustomer] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpBusy, setOtpBusy] = useState(false);
+  const [customerAuthMode, setCustomerAuthMode] = useState('login');
+  const [customerAuthBusy, setCustomerAuthBusy] = useState(false);
   const [form, setForm] = useState({
   name: '',
   description: '',
@@ -215,42 +214,24 @@ if (data) {
     setLoading(false);
   }
 
-  async function sendCustomerOtp(e) {
+  async function customerPasswordAuth(e) {
     e.preventDefault();
-    setOtpBusy(true);
+    setCustomerAuthBusy(true);
     setMessage('');
     const cleanEmail = email.trim().toLowerCase();
-    const { error } = await supabase.auth.signInWithOtp({
-      email: cleanEmail,
-      options: { shouldCreateUser: true }
-    });
-    if (error) {
-      setMessage(error.message);
-    } else {
-      setEmail(cleanEmail);
-      setOtpSent(true);
-      setMessage('A 6-digit verification code has been sent to your Gmail.');
-    }
-    setOtpBusy(false);
-  }
+    const result = customerAuthMode === 'signup'
+      ? await supabase.auth.signUp({ email: cleanEmail, password })
+      : await supabase.auth.signInWithPassword({ email: cleanEmail, password });
 
-  async function verifyCustomerOtp(e) {
-    e.preventDefault();
-    setOtpBusy(true);
-    setMessage('');
-    const { error } = await supabase.auth.verifyOtp({
-      email: email.trim().toLowerCase(),
-      token: otpCode.trim(),
-      type: 'email'
-    });
-    if (error) {
-      setMessage(error.message);
+    if (result.error) {
+      setMessage(result.error.message);
+    } else if (customerAuthMode === 'signup' && !result.data.session) {
+      setMessage('Account created. Email confirmation is enabled in Supabase; turn it off to allow instant login without SMTP.');
     } else {
-      setOtpSent(false);
-      setOtpCode('');
-      setMessage('Login successful!');
+      setPassword('');
+      setMessage(customerAuthMode === 'signup' ? 'Account created successfully!' : 'Login successful!');
     }
-    setOtpBusy(false);
+    setCustomerAuthBusy(false);
   }
 
   async function logout() {
@@ -715,20 +696,18 @@ sizes: (p.sizes || []).join(','),
               </>
             ) : (
               <>
-                <p className="account-muted">Enter your Gmail to receive a one-time verification code and access your CORE KITS account.</p>
-                {!otpSent ? (
-                  <form onSubmit={sendCustomerOtp}>
-                    <input className="search" type="email" placeholder="Enter your Gmail address" value={email} onChange={e => setEmail(e.target.value)} required />
-                    <button className="account-action" disabled={otpBusy}>{otpBusy ? 'SENDING CODE...' : 'SEND LOGIN CODE'}</button>
-                  </form>
-                ) : (
-                  <form onSubmit={verifyCustomerOtp}>
-                    <p className="account-muted">Enter the 6-digit code sent to <strong>{email}</strong>.</p>
-                    <input className="search" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength="6" placeholder="Enter 6-digit code" value={otpCode} onChange={e => setOtpCode(e.target.value.replace(/\\D/g, '').slice(0, 6))} required />
-                    <button className="account-action" disabled={otpBusy || otpCode.length !== 6}>{otpBusy ? 'VERIFYING...' : 'VERIFY & LOG IN'}</button>
-                    <button type="button" className="detail-buy-now" disabled={otpBusy} onClick={() => { setOtpSent(false); setOtpCode(''); setMessage(''); }}>CHANGE GMAIL / RESEND CODE</button>
-                  </form>
-                )}
+                <p className="account-muted">Use your Gmail and password to ${customerAuthMode === 'signup' ? 'create a CORE KITS account' : 'log in'}.</p>
+                <form onSubmit={customerPasswordAuth}>
+                  <input className="search" type="email" placeholder="Enter your Gmail address" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <input className="search" type="password" placeholder="Password (minimum 6 characters)" value={password} onChange={e => setPassword(e.target.value)} minLength="6" autoComplete={customerAuthMode === 'signup' ? 'new-password' : 'current-password'} required />
+                  <button className="account-action" disabled={customerAuthBusy}>{customerAuthBusy ? 'PLEASE WAIT...' : customerAuthMode === 'signup' ? 'CREATE ACCOUNT' : 'LOG IN'}</button>
+                </form>
+                <button type="button" className="detail-buy-now" disabled={customerAuthBusy} onClick={() => { setCustomerAuthMode(customerAuthMode === 'signup' ? 'login' : 'signup'); setMessage(''); setPassword(''); }}>
+                  {customerAuthMode === 'signup' ? 'ALREADY HAVE AN ACCOUNT? LOG IN' : 'NEW CUSTOMER? CREATE ACCOUNT'}
+                </button>
+                {message && <p className="account-error">{message}</p>}
+              </>
+            )}
                 {message && <p className="account-error">{message}</p>}
               </>
             )}
