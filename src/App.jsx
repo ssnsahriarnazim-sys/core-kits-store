@@ -357,29 +357,42 @@ sizes: (p.sizes || []).join(','),
   return (
     <div className="app">
       <header className="navbar">
+        <button className="header-icon" onClick={() => document.getElementById('product-search')?.focus()} aria-label="Search">⌕</button>
         <a className="logo" href="#">CORE<span>KITS.</span></a>
-
-        <div style={{display:'flex',gap:12,alignItems:'center'}}>
-          <a className="contact" href={`https://wa.me/${WA}`}>
-            CONTACT ↗
-          </a>
-          <button
-            onClick={() => setShowLogin(true)}
-            style={{border:0,background:'none',fontSize:20}}
-            aria-label="Admin login"
-          >♙</button>
-        </div>
+        <button className="header-icon" onClick={() => setShowLogin(true)} aria-label="Admin login">♙</button>
       </header>
 
-      <section className="hero">
-        <p className="eyebrow">THE FOOTBALL CULTURE</p>
-        <h1>WEAR THE<br/><span>DIFFERENCE.</span></h1>
-        <p>Represent your club. Wear your passion.</p>
-        <a href="#shop" className="shop-btn">
-          EXPLORE COLLECTION ↗
-        </a>
-        <div className="hero-bottom">
-          FOOTBALL IS MORE THAN A GAME.
+      <section className="promo-banner">
+        <div className="promo-copy">
+          <p className="eyebrow">THE NEW SEASON IS HERE</p>
+          <h1>WEAR YOUR<br/><span>COLOURS.</span></h1>
+          <p>Premium football kits. Built for true fans.</p>
+          <a href="#shop" className="shop-btn">SHOP COLLECTION ↗</a>
+          <div className="promo-code"><small>USE CODE</small><strong>COREKITS150</strong><small>FOR YOUR NEXT ORDER</small></div>
+        </div>
+        <div className="promo-art" aria-hidden="true">
+          {products.filter(p => p.image_url || p.image_urls?.length).slice(0,3).map((p,i) => <img key={p.id} src={p.image_urls?.[0] || p.image_url} alt="" className={`promo-shirt promo-shirt-${i+1}`} />)}
+          <span className="promo-watermark">CK</span>
+        </div>
+      </section>
+
+      <section className="designer-strip">
+        <div className="designer-label">DESIGNER<br/>CHOICE</div>
+        <button className={category === 'All' ? 'selected' : ''} onClick={() => setCategory('All')}>ALL KITS</button>
+        {categories.slice(0,5).map(c => <button key={c.id} className={category === c.id ? 'selected' : ''} onClick={() => setCategory(c.id)}>{c.name}</button>)}
+      </section>
+
+      <section className="featured-section">
+        <div className="collection-heading"><h2><span>Customer</span> Choice</h2><a href="#shop">More　›</a></div>
+        <div className="products featured-products">
+          {filtered.slice(0,4).map(p => <ProductCard key={p.id} product={p} order={order}/>)}
+        </div>
+      </section>
+
+      <section className="collection-section">
+        <div className="collection-heading"><h2><span>Recommend</span> Collections</h2><a href="#shop">More　›</a></div>
+        <div className="collection-tiles">
+          {categories.slice(0,4).map((c,i) => <button key={c.id} onClick={() => {setCategory(c.id); document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}><span>0{i+1}</span><strong>{c.name}</strong><small>EXPLORE COLLECTION ↗</small></button>)}
         </div>
       </section>
 <section id="tracking" className="tracking-section">
@@ -424,13 +437,14 @@ sizes: (p.sizes || []).join(','),
       <main id="shop" className="shop">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">OUR COLLECTION</p>
+            <p className="eyebrow">EXPLORE ALL</p>
             <h2>Find Your Kit.</h2>
           </div>
           <span>{filtered.length} PRODUCTS</span>
         </div>
 
         <input
+          id="product-search"
           className="search"
           placeholder="Search your favourite team..."
           value={search}
