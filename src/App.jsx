@@ -8,7 +8,7 @@ export default function App() {
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
-  const [activeOrderProductId, setActiveOrderProductId] = useState(null);
+  const [activeOrderCardIndex, setActiveOrderCardIndex] = useState(null);
   const [admin, setAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
@@ -470,8 +470,8 @@ sizes: (p.sizes || []).join(','),
         </div>
 
         <div className="products">
-          {filtered.map(p => (
-            <ProductCard key={p.id} product={p} order={order} showOrder={activeOrderProductId === p.id} onOrderOpen={() => setActiveOrderProductId(p.id)} onOrderClose={() => setActiveOrderProductId(null)}/>
+          {filtered.map((p, index) => (
+            <ProductCard key={`${p.id}-shop-${index}`} product={p} order={order} showOrder={activeOrderCardIndex === index} onOrderOpen={() => setActiveOrderCardIndex(index)} onOrderClose={() => setActiveOrderCardIndex(null)}/>
           ))}
         </div>
 
