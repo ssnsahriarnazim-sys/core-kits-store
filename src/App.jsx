@@ -617,7 +617,7 @@ sizes: (p.sizes || []).join(','),
         <button className="header-icon mobile-menu-trigger" onClick={() => setShowMenu(true)} aria-label="Open menu">☰</button>
         <a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a>
         <nav className="desktop-links">
-          <a href="#">HOME</a><a href="#shop">SHOP ALL</a><a href="#collections">COLLECTIONS</a><a href="#tracking">TRACK ORDER</a>
+          <a href="#">{storefrontSettings.navHome || 'HOME'}</a><a href="#shop">{storefrontSettings.navShop || 'SHOP ALL'}</a><a href="#collections">{storefrontSettings.navCollections || 'COLLECTIONS'}</a><a href="#tracking">{storefrontSettings.navTracking || 'TRACK ORDER'}</a>
         </nav>
         <div className="header-tools">
           <button className="header-icon" onClick={() => document.getElementById('product-search')?.focus()} aria-label="Search">⌕</button>
@@ -629,8 +629,8 @@ sizes: (p.sizes || []).join(','),
 
       {storefrontSettings.bannerUrl && <section className="custom-store-banner"><img src={storefrontSettings.bannerUrl} alt="CORE KITS custom banner"/></section>}
       <section className="designer-strip">
-        <div className="designer-label">SHOP BY<br/>CATEGORY</div>
-        <button className={category === 'All' ? 'selected' : ''} onClick={() => setCategory('All')}>ALL PRODUCTS</button>
+        <div className="designer-label">{storefrontSettings.categoryStripTitle || 'SHOP BY CATEGORY'}</div>
+        <button className={category === 'All' ? 'selected' : ''} onClick={() => setCategory('All')}>{storefrontSettings.allProductsLabel || 'ALL PRODUCTS'}</button>
         {categories.slice(0,7).map(c => <button key={c.id} className={category === c.id ? 'selected' : ''} onClick={() => {setCategory(c.id);document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}>{c.name}</button>)}
       </section>
 
@@ -646,14 +646,14 @@ sizes: (p.sizes || []).join(','),
       {storefrontSettings.collectionsEnabled && <section id="collections" className="collection-section">
         <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.collectionsEyebrow}</p><h2>{storefrontSettings.collectionsTitle}</h2></div><a href="#shop">ALL PRODUCTS <b>↗</b></a></div>
         <div className="collection-tiles">
-          {categories.slice(0,4).map((c,i) => <button key={c.id} onClick={() => {setCategory(c.id); document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}><span>0{i+1}</span><strong>{c.name}</strong><small>SHOP COLLECTION ↗</small></button>)}
+          {categories.slice(0,4).map((c,i) => <button key={c.id} onClick={() => {setCategory(c.id); document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}><span>0{i+1}</span><strong>{c.name}</strong><small>{storefrontSettings.collectionTileCta || 'SHOP COLLECTION'} ↗</small></button>)}
         </div>
       </section>}
 {storefrontSettings.trackingEnabled && <section id="tracking" className="tracking-section">
   <div className="tracking-box">
-    <p className="eyebrow">ORDER TRACKING</p>
-    <h2>Track Your Order.</h2>
-    <p>Enter your Order ID and phone number to check your order status.</p>
+    <p className="eyebrow">{storefrontSettings.trackingEyebrow || 'ORDER TRACKING'}</p>
+    <h2>{storefrontSettings.trackingTitle || 'Track Your Order.'}</h2>
+    <p>{storefrontSettings.trackingDescription || 'Enter your Order ID and phone number to check your order status.'}</p>
 
     <form onSubmit={trackOrder}>
       <input
@@ -673,7 +673,7 @@ sizes: (p.sizes || []).join(','),
       />
 
       <button className="admin-submit" disabled={trackingLoading}>
-        {trackingLoading ? 'CHECKING...' : 'TRACK ORDER'}
+        {trackingLoading ? 'CHECKING...' : (storefrontSettings.trackingButton || 'TRACK ORDER')}
       </button>
     </form>
 
@@ -690,11 +690,11 @@ sizes: (p.sizes || []).join(','),
 </section>}
       <main id="shop" className="shop">
         <div className="section-heading">
-          <div><p className="eyebrow">THE CORE KITS STORE</p><h2>Explore <span>All Products</span></h2><p className="shop-intro">Choose your team. Find your fit. Get match-day ready.</p></div>
+          <div><p className="eyebrow">{storefrontSettings.shopEyebrow || 'THE CORE KITS STORE'}</p><h2>{storefrontSettings.shopTitle || 'Explore All Products'}</h2><p className="shop-intro">{storefrontSettings.shopDescription || 'Choose your team. Find your fit. Get match-day ready.'}</p></div>
           <span>{filtered.length} PRODUCTS</span>
         </div>
         <div className="shop-toolbar">
-          <input id="product-search" className="search" placeholder="Search your favourite team..." value={search} onChange={e => setSearch(e.target.value)}/>
+          <input id="product-search" className="search" placeholder={storefrontSettings.searchPlaceholder || 'Search your favourite team...'} value={search} onChange={e => setSearch(e.target.value)}/>
           <select className="shop-sort" value={sortBy} onChange={e=>setSortBy(e.target.value)} aria-label="Sort products">
             <option value="featured">Sort: Featured</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option><option value="name">Name: A to Z</option>
           </select>
@@ -718,8 +718,8 @@ sizes: (p.sizes || []).join(','),
       </main>
 
       <footer className="site-footer">
-        <div className="footer-main"><div><a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a><p>{storefrontSettings.footerTagline}</p><small>{storefrontSettings.footerDescription}</small></div><div><b>SHOP</b><a href="#shop">All Products</a><a href="#collections">Collections</a><a href="#tracking">Track Order</a></div><div><b>HELP & SUPPORT</b><a href="#tracking">Order Tracking</a><a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">Contact on WhatsApp</a><button onClick={()=>setShowAccount(true)}>My Account</button></div></div>
-        <div className="footer-bottom"><small>© 2026 CORE KITS. ALL RIGHTS RESERVED.</small><small>BUILT FOR THE LOVE OF THE GAME.</small></div>
+        <div className="footer-main"><div><a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a><p>{storefrontSettings.footerTagline}</p><small>{storefrontSettings.footerDescription}</small></div><div><b>{storefrontSettings.footerShopHeading || 'SHOP'}</b><a href="#shop">{storefrontSettings.allProductsLabel || 'All Products'}</a><a href="#collections">Collections</a><a href="#tracking">Track Order</a></div><div><b>{storefrontSettings.footerHelpHeading || 'HELP & SUPPORT'}</b><a href="#tracking">Order Tracking</a><a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">{storefrontSettings.footerContactLabel || 'Contact on WhatsApp'}</a><button onClick={()=>setShowAccount(true)}>{storefrontSettings.footerAccountLabel || 'My Account'}</button></div></div>
+        <div className="footer-bottom"><small>{storefrontSettings.copyrightText || '© 2026 CORE KITS. ALL RIGHTS RESERVED.'}</small><small>{storefrontSettings.footerBottomText || 'BUILT FOR THE LOVE OF THE GAME.'}</small></div>
       </footer>
 <nav className="floating-nav">
   <button type="button" onClick={() => setShowAccount(true)}>♙<span>MY ACCOUNT</span></button>
@@ -916,6 +916,18 @@ sizes: (p.sizes || []).join(','),
                     <h4>Brand & Announcement</h4>
                     <label>Store logo text</label><input className="search" value={storefrontSettings.logoText} onChange={e=>setStorefrontSettings({...storefrontSettings,logoText:e.target.value})}/>
                     <label>Top announcement bar</label><input className="search" value={storefrontSettings.announcement} onChange={e=>setStorefrontSettings({...storefrontSettings,announcement:e.target.value})}/>
+                    <h4>Navigation & Labels</h4>
+                    <label>Home menu label</label><input className="search" value={storefrontSettings.navHome || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,navHome:e.target.value})}/>
+                    <label>Shop menu label</label><input className="search" value={storefrontSettings.navShop || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,navShop:e.target.value})}/>
+                    <label>Collections menu label</label><input className="search" value={storefrontSettings.navCollections || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,navCollections:e.target.value})}/>
+                    <label>Track order menu label</label><input className="search" value={storefrontSettings.navTracking || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,navTracking:e.target.value})}/>
+                    <label>Category strip heading</label><input className="search" value={storefrontSettings.categoryStripTitle || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,categoryStripTitle:e.target.value})}/>
+                    <label>All products label</label><input className="search" value={storefrontSettings.allProductsLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,allProductsLabel:e.target.value})}/>
+                    <h4>Shop Page Content</h4>
+                    <label>Shop eyebrow</label><input className="search" value={storefrontSettings.shopEyebrow || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,shopEyebrow:e.target.value})}/>
+                    <label>Shop title</label><input className="search" value={storefrontSettings.shopTitle || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,shopTitle:e.target.value})}/>
+                    <label>Shop description</label><input className="search" value={storefrontSettings.shopDescription || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,shopDescription:e.target.value})}/>
+                    <label>Product search placeholder</label><input className="search" value={storefrontSettings.searchPlaceholder || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,searchPlaceholder:e.target.value})}/>
                     <h4>Custom Banner</h4>
                     {storefrontSettings.bannerUrl && <img className="customizer-banner-preview" src={storefrontSettings.bannerUrl} alt="Current banner"/>}
                     <label>Upload banner image</label><input className="search" type="file" accept="image/*" onChange={e=>setBannerFile(e.target.files?.[0] || null)}/>
@@ -938,7 +950,19 @@ sizes: (p.sizes || []).join(','),
                     <label>Collections small heading</label><input className="search" value={storefrontSettings.collectionsEyebrow} onChange={e=>setStorefrontSettings({...storefrontSettings,collectionsEyebrow:e.target.value})}/>
                     <label>Collections title</label><input className="search" value={storefrontSettings.collectionsTitle} onChange={e=>setStorefrontSettings({...storefrontSettings,collectionsTitle:e.target.value})}/>
                     <label className="customizer-check"><input type="checkbox" checked={!!storefrontSettings.trackingEnabled} onChange={e=>setStorefrontSettings({...storefrontSettings,trackingEnabled:e.target.checked})}/> Show Order Tracking</label>
-                    <h4>Footer</h4><label>Tagline</label><input className="search" value={storefrontSettings.footerTagline} onChange={e=>setStorefrontSettings({...storefrontSettings,footerTagline:e.target.value})}/>
+                    <h4>Order Tracking Content</h4>
+                    <label>Tracking small heading</label><input className="search" value={storefrontSettings.trackingEyebrow || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,trackingEyebrow:e.target.value})}/>
+                    <label>Tracking title</label><input className="search" value={storefrontSettings.trackingTitle || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,trackingTitle:e.target.value})}/>
+                    <label>Tracking description</label><input className="search" value={storefrontSettings.trackingDescription || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,trackingDescription:e.target.value})}/>
+                    <label>Tracking button text</label><input className="search" value={storefrontSettings.trackingButton || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,trackingButton:e.target.value})}/>
+                    <h4>Footer</h4>
+                    <label>Shop column heading</label><input className="search" value={storefrontSettings.footerShopHeading || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,footerShopHeading:e.target.value})}/>
+                    <label>Help column heading</label><input className="search" value={storefrontSettings.footerHelpHeading || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,footerHelpHeading:e.target.value})}/>
+                    <label>WhatsApp link label</label><input className="search" value={storefrontSettings.footerContactLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,footerContactLabel:e.target.value})}/>
+                    <label>Account link label</label><input className="search" value={storefrontSettings.footerAccountLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,footerAccountLabel:e.target.value})}/>
+                    <label>Copyright line</label><input className="search" value={storefrontSettings.copyrightText || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,copyrightText:e.target.value})}/>
+                    <label>Footer bottom line</label><input className="search" value={storefrontSettings.footerBottomText || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,footerBottomText:e.target.value})}/>
+                    <label>Tagline</label><input className="search" value={storefrontSettings.footerTagline} onChange={e=>setStorefrontSettings({...storefrontSettings,footerTagline:e.target.value})}/>
                     <label>Description</label><textarea className="search" value={storefrontSettings.footerDescription} onChange={e=>setStorefrontSettings({...storefrontSettings,footerDescription:e.target.value})}/>
                     <h4>Storefront Colors</h4>
                     <div className="customizer-color-grid"><label>Background<input type="color" value={storefrontSettings.backgroundColor} onChange={e=>setStorefrontSettings({...storefrontSettings,backgroundColor:e.target.value})}/></label><label>Accent<input type="color" value={storefrontSettings.accentColor} onChange={e=>setStorefrontSettings({...storefrontSettings,accentColor:e.target.value})}/></label><label>Text<input type="color" value={storefrontSettings.textColor} onChange={e=>setStorefrontSettings({...storefrontSettings,textColor:e.target.value})}/></label></div>
