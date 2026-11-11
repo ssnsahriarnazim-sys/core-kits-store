@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from './supabase';
 
 const WA = '966564905417';
+const PUSH_VAPID_PUBLIC_KEY = 'BNOyNWzepPSEctty1FP7u87cOh6hacFUru96XdkKQb2UVFzWj5m7vSfVCl2f-QKPgZlJiHd9l3oHj2_rdYc3Ogo';
+function urlBase64ToUint8Array(value) {
+  const padding = '='.repeat((4 - value.length % 4) % 4);
+  const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
+  return Uint8Array.from(atob(base64), char => char.charCodeAt(0));
+}
 
 export default function App() {
   const [products, setProducts] = useState([]);
@@ -32,6 +38,9 @@ export default function App() {
   const [profileMessage, setProfileMessage] = useState('');
   const [checkoutResult, setCheckoutResult] = useState('');
   const [admin, setAdmin] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushMessage, setPushMessage] = useState('');
+  const [pushEnabled, setPushEnabled] = useState(false);
   const isAdminRoute = window.location.pathname === '/admin' || window.location.pathname === '/admin/';
   const [showLogin, setShowLogin] = useState(isAdminRoute);
   const [showAccount, setShowAccount] = useState(false);
@@ -400,6 +409,32 @@ if (data) {
 }
   }
 
+  async function enableOrderNotifications() {
+    setPushBusy(true); setPushMessage('');
+    try {
+      if (!admin || !customer?.id) throw new Error('Please sign in with your admin account first.');
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) throw new Error('Push notifications are not supported in this browser. Use Chrome on Android.');
+      if (!window.isSecureContext) throw new Error('Notifications require HTTPS.');
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') throw new Error('Notification permission was not allowed. Enable it in Chrome site settings.');
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.ready;
+      let subscription = await registration.pushManager.getSubscription();
+      if (!subscription) subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(PUSH_VAPID_PUBLIC_KEY) });
+      const { error } = await supabase.from('admin_push_subscriptions').upsert({ id: true, user_id: customer.id, endpoint: subscription.endpoint, subscription: subscription.toJSON(), updated_at: new Date().toISOString() }, { onConflict: 'id' });
+      if (error) throw error;
+      setPushEnabled(true); setPushMessage('Notifications enabled on this phone. Keep Chrome notifications allowed.');
+    } catch (error) { setPushMessage(error.message || 'Could not enable notifications.'); }
+    finally { setPushBusy(false); }
+  }
+
+  async function refreshPushStatus() {
+    if (!admin || !customer?.id || !('serviceWorker' in navigator)) return;
+    try { const registration = await navigator.serviceWorker.getRegistration('/'); const subscription = await registration?.pushManager.getSubscription(); setPushEnabled(!!subscription); }
+    catch (_) { setPushEnabled(false); }
+  }
+
+  useEffect(() => { if (admin) refreshPushStatus(); else { setPushEnabled(false); setPushMessage(''); } }, [admin, customer?.id]);
   async function login(e) {
     e.preventDefault();
     setLoading(true);
@@ -1010,6 +1045,12 @@ sizes: (p.sizes || []).join(','),
               <div>
                 <h2>Admin Dashboard</h2>
                 <p>Manage your CORE KITS collection.</p>
+
+                <section className="website-customizer">
+                  <div className="customizer-heading"><p className="eyebrow">PRIVATE ADMIN ALERTS</p><h3>New Order Notifications</h3><p>Receive an alert on this phone when a customer places an order, even when the website is closed.</p></div>
+                  <button type="button" className="admin-submit" onClick={enableOrderNotifications} disabled={pushBusy}>{pushBusy ? 'SETTING UP...' : pushEnabled ? 'NOTIFICATIONS ENABLED' : 'ENABLE NOTIFICATIONS ON THIS PHONE'}</button>
+                  {pushMessage && <p role="status">{pushMessage}</p>}
+                </section>
 
                 <button className="admin-submit" onClick={logout}>
                   LOG OUT
