@@ -744,7 +744,11 @@ sizes: (p.sizes || []).join(','),
                 </select>
                 <label htmlFor="review-text">Your review</label>
                 <textarea id="review-text" className="search" rows="3" maxLength="1200" placeholder="Share your experience with this product..." value={reviewText} onChange={e=>setReviewText(e.target.value)}/>
-                <button className="account-action" type="submit" disabled={reviewBusy}>{reviewBusy?'SAVING...':customer?'SUBMIT REVIEW':'LOG IN TO REVIEW'}</button>
+                {customer ? (
+                  <button className="account-action" type="submit" disabled={reviewBusy}>{reviewBusy ? 'SAVING...' : 'SUBMIT REVIEW'}</button>
+                ) : (
+                  <button className="account-action" type="button" onClick={() => { setReviewMessage(''); setShowAccount(true); }}>LOG IN TO REVIEW</button>
+                )}
                 {reviewMessage && <p className="review-message">{reviewMessage}</p>}
                 {!customer && <p className="account-muted">Sign in to your CORE KITS account before submitting a review.</p>}
               </form>
