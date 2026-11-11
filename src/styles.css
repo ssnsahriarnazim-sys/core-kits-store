@@ -1558,3 +1558,89 @@ a{color:inherit}
   background:var(--store-text,#171717)!important;color:var(--store-bg,#f7f5f0)!important;
   border:1px solid var(--store-accent,#b89a62)!important;
 }
+
+
+/* Targeted readability fix: account login, tracking copy, menu */
+.app .account-panel form .account-action,
+.app .account-panel>.account-action,
+.app .account-panel .account-action{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;min-height:50px!important;padding:13px 18px!important;
+  margin:16px 0 8px!important;border:1px solid var(--store-accent,#b89a62)!important;
+  border-radius:8px!important;background:var(--store-accent,#b89a62)!important;
+  color:#171612!important;-webkit-text-fill-color:#171612!important;
+  font-size:14px!important;font-weight:900!important;letter-spacing:.6px!important;
+  line-height:1.3!important;opacity:1!important;visibility:visible!important;
+}
+.app .account-panel .detail-buy-now{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;min-height:48px!important;padding:12px!important;
+  margin-top:10px!important;border:1px solid var(--store-accent,#b89a62)!important;
+  border-radius:8px!important;background:transparent!important;
+  color:var(--store-text,#171717)!important;-webkit-text-fill-color:var(--store-text,#171717)!important;
+  font-size:12px!important;font-weight:800!important;opacity:1!important;visibility:visible!important;
+}
+.app .account-panel .account-muted,
+.app .account-panel>p:not(.eyebrow){
+  color:var(--store-text,#171717)!important;-webkit-text-fill-color:var(--store-text,#171717)!important;
+  opacity:1!important;
+}
+.app .account-panel .eyebrow{
+  color:var(--store-accent,#9b793f)!important;-webkit-text-fill-color:var(--store-accent,#9b793f)!important;
+  font-weight:800!important;opacity:1!important;
+}
+.app .tracking-modal-panel{
+  width:min(100%,620px)!important;padding:26px!important;
+  background:var(--store-bg,#f7f5f0)!important;color:var(--store-text,#171717)!important;
+}
+.app .tracking-modal-panel .tracking-box{
+  width:100%!important;max-width:none!important;padding:30px 24px!important;
+  background:#171a1e!important;color:#fff!important;
+  border:1px solid var(--store-accent,#b89a62)!important;
+}
+.app .tracking-modal-panel .tracking-box .eyebrow{
+  display:block!important;color:#e0bd7b!important;-webkit-text-fill-color:#e0bd7b!important;
+  font-size:11px!important;font-weight:900!important;letter-spacing:1.5px!important;
+  opacity:1!important;visibility:visible!important;
+}
+.app .tracking-modal-panel .tracking-box h2{
+  display:block!important;margin:8px 0 12px!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;
+  font-size:clamp(25px,5vw,34px)!important;font-weight:900!important;
+  line-height:1.2!important;opacity:1!important;visibility:visible!important;
+}
+.app .tracking-modal-panel .tracking-box>p:not(.eyebrow){
+  display:block!important;color:#e2e2e2!important;-webkit-text-fill-color:#e2e2e2!important;
+  font-size:14px!important;line-height:1.6!important;opacity:1!important;visibility:visible!important;
+}
+.app .tracking-modal-panel .tracking-box input{
+  background:#fff!important;color:#171717!important;-webkit-text-fill-color:#171717!important;
+}
+.app .tracking-modal-panel .tracking-box input::placeholder{
+  color:#777!important;-webkit-text-fill-color:#777!important;opacity:1!important;
+}
+.app .tracking-modal-panel .tracking-box .admin-submit{
+  background:var(--store-accent,#b89a62)!important;color:#171612!important;
+  -webkit-text-fill-color:#171612!important;font-weight:900!important;
+}
+.app .menu-panel{
+  padding:38px 24px 24px!important;
+  background:var(--store-bg,#f7f5f0)!important;color:var(--store-text,#171717)!important;
+}
+.app .menu-panel>p.eyebrow{
+  color:var(--store-accent,#9b793f)!important;-webkit-text-fill-color:var(--store-accent,#9b793f)!important;
+}
+.app .menu-panel>h2{
+  display:block!important;color:var(--store-text,#171717)!important;
+  -webkit-text-fill-color:var(--store-text,#171717)!important;
+  font-size:30px!important;font-weight:900!important;opacity:1!important;
+}
+.app .menu-panel>a,.app .menu-panel>button:not(.account-close){
+  color:var(--store-text,#171717)!important;
+  -webkit-text-fill-color:var(--store-text,#171717)!important;
+}
+@media(max-width:600px){
+  .app .tracking-modal-panel{padding:18px 12px!important}
+  .app .tracking-modal-panel .tracking-box{padding:25px 15px!important}
+  .app .account-panel .account-action{min-height:48px!important}
+}
