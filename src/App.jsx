@@ -71,7 +71,7 @@ const [trackingLoading, setTrackingLoading] = useState(false);
     categoryStripTitle: 'SHOP BY CATEGORY', allProductsLabel: 'ALL PRODUCTS', categoryStripLimit: 7, collectionTileLimit: 4,
     shopEyebrow: 'THE CORE KITS STORE', shopTitle: 'Explore All Products', shopDescription: 'Choose your team. Find your fit. Get match-day ready.', searchPlaceholder: 'Search your favourite team...',
     trackingEyebrow: 'ORDER TRACKING', trackingTitle: 'Track Your Order.', trackingDescription: 'Enter your Order ID and phone number to check your order status.', trackingButton: 'TRACK ORDER',
-    collectionTileCta: 'SHOP COLLECTION', footerShopHeading: 'SHOP', footerHelpHeading: 'HELP & SUPPORT', footerContactLabel: 'Contact on WhatsApp', footerAccountLabel: 'My Account', copyrightText: '© 2026 CORE KITS. ALL RIGHTS RESERVED.', footerBottomText: 'BUILT FOR THE LOVE OF THE GAME.', facebookUrl: '', instagramUrl: '', tiktokUrl: '', productSelectLabel: 'SELECT OPTIONS', productDetailsLabel: 'VIEW DETAILS', addCartLabel: 'ADD TO CART', buyNowLabel: 'BUY NOW', productColumns: 4, productImageRatio: '4 / 4.5', floatingAccountLabel: 'MY ACCOUNT', floatingCartLabel: 'CART', floatingShopLabel: 'SHOP', floatingMenuLabel: 'MENU',
+    collectionTileCta: 'SHOP COLLECTION', footerShopHeading: 'SHOP', footerHelpHeading: 'HELP & SUPPORT', footerContactLabel: 'Contact on WhatsApp', footerAccountLabel: 'My Account', copyrightText: '© 2026 CORE KITS. ALL RIGHTS RESERVED.', footerBottomText: 'BUILT FOR THE LOVE OF THE GAME.', facebookUrl: '', instagramUrl: '', tiktokUrl: '', productSelectLabel: 'SELECT OPTIONS', productDetailsLabel: 'VIEW DETAILS', addCartLabel: 'ADD TO CART', buyNowLabel: 'BUY NOW', productColumns: 4, productImageRatio: '4 / 4.5', productImageFit: 'cover', productCardRadius: 10, showProductTools: true, showStockLabel: true, floatingAccountLabel: 'MY ACCOUNT', floatingCartLabel: 'CART', floatingShopLabel: 'SHOP', floatingMenuLabel: 'MENU',
     choiceEyebrow: 'FAN FAVOURITES', choiceTitle: 'Customer Choice', choiceEnabled: true, choiceProductIds: [], choiceLimit: 4,
     recommendedEnabled: true, recommendedEyebrow: 'HANDPICKED FOR YOU', recommendedTitle: 'Recommended Collection', recommendedCategoryId: 'all', recommendedLimit: 4,
     collectionsEnabled: true, collectionsEyebrow: 'FIND YOUR STYLE', collectionsTitle: 'Explore Collections', trackingEnabled: true,
@@ -612,7 +612,7 @@ sizes: (p.sizes || []).join(','),
   const compareProducts = products.filter(p => compareItems.includes(p.id));
 
   return (
-    <div className="app" style={{'--store-bg':storefrontSettings.backgroundColor,'--store-accent':storefrontSettings.accentColor,'--store-text':storefrontSettings.textColor,'--store-font':storefrontSettings.fontFamily || 'DM Sans','--product-cols':storefrontSettings.productColumns || 4,'--product-image-ratio':storefrontSettings.productImageRatio || '4 / 4.5'}}>
+    <div className="app" style={{'--store-bg':storefrontSettings.backgroundColor,'--store-accent':storefrontSettings.accentColor,'--store-text':storefrontSettings.textColor,'--store-font':storefrontSettings.fontFamily || 'DM Sans','--product-cols':storefrontSettings.productColumns || 4,'--product-image-ratio':storefrontSettings.productImageRatio || '4 / 4.5','--product-image-fit':storefrontSettings.productImageFit || 'cover','--product-card-radius':(storefrontSettings.productCardRadius ?? 10)+'px'}}>
       <div className="top-announcement">{storefrontSettings.announcement}</div>
       <header className="navbar">
         <button className="header-icon mobile-menu-trigger" onClick={() => setShowMenu(true)} aria-label="Open menu">☰</button>
@@ -980,6 +980,11 @@ sizes: (p.sizes || []).join(','),
                     <h4>Product Grid Design</h4>
                     <label>Desktop product columns</label><select className="search" value={storefrontSettings.productColumns || 4} onChange={e=>setStorefrontSettings({...storefrontSettings,productColumns:Number(e.target.value)})}><option value="2">2 columns</option><option value="3">3 columns</option><option value="4">4 columns</option><option value="5">5 columns</option></select>
                     <label>Product image shape</label><select className="search" value={storefrontSettings.productImageRatio || '4 / 4.5'} onChange={e=>setStorefrontSettings({...storefrontSettings,productImageRatio:e.target.value})}><option value="1 / 1">Square</option><option value="4 / 5">Portrait</option><option value="3 / 4">Tall portrait</option><option value="4 / 4.5">Classic</option></select>
+                    <h4>Product Card Appearance</h4>
+                    <label>Product image fit</label><select className="search" value={storefrontSettings.productImageFit || 'cover'} onChange={e=>setStorefrontSettings({...storefrontSettings,productImageFit:e.target.value})}><option value="cover">Fill image area</option><option value="contain">Show full image</option></select>
+                    <label>Product card corner roundness</label><select className="search" value={storefrontSettings.productCardRadius ?? 10} onChange={e=>setStorefrontSettings({...storefrontSettings,productCardRadius:Number(e.target.value)})}><option value="0">Square</option><option value="6">Slightly rounded</option><option value="10">Rounded</option><option value="18">Extra rounded</option></select>
+                    <label><input type="checkbox" checked={storefrontSettings.showProductTools !== false} onChange={e=>setStorefrontSettings({...storefrontSettings,showProductTools:e.target.checked})}/> Show wishlist, compare & quick-view icons</label>
+                    <label><input type="checkbox" checked={storefrontSettings.showStockLabel !== false} onChange={e=>setStorefrontSettings({...storefrontSettings,showStockLabel:e.target.checked})}/> Show product stock label</label>
                     <h4>Product & Floating Navigation Labels</h4>
                     <label>Product select button</label><input className="search" value={storefrontSettings.productSelectLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,productSelectLabel:e.target.value})}/>
                     <label>Product details button</label><input className="search" value={storefrontSettings.productDetailsLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,productDetailsLabel:e.target.value})}/>
@@ -1174,14 +1179,14 @@ function ProductCard({product, onOpen, wished, compared, onWishlist, onCompare, 
       <div className="product-image" onClick={onOpen}>
         {product.image_urls?.length ? <img src={product.image_urls[0]} alt={product.name}/> : product.image_url ? <img src={product.image_url} alt={product.name}/> : <span>CORE KITS.</span>}
         {hasSale && <span className="product-sale">-{discount}%</span>}
-        <div className="product-card-tools">
+        {settings.showProductTools !== false && <div className="product-card-tools">
           <button type="button" className={wished?'is-active':''} aria-label="Add to wishlist" title="Wishlist" onClick={onWishlist}>{wished?'♥':'♡'}</button>
           <button type="button" className={compared?'is-active':''} aria-label="Compare product" title="Compare" onClick={onCompare}>⇄</button>
           <button type="button" aria-label="Quick view" title="Quick view" onClick={onOpen}>⌕</button>
-        </div>
+        </div>}
       </div>
       <div className="product-info">
-        <div className="product-category">{product.stock > 0 ? 'READY TO SHIP' : 'CHECK AVAILABILITY'}</div>
+        {settings.showStockLabel !== false && <div className="product-category">{product.stock > 0 ? 'READY TO SHIP' : 'CHECK AVAILABILITY'}</div>}
         <h3 onClick={onOpen}>{product.name}</h3>
         <div className="product-price">
           <strong>{product.price ? `৳${product.price}` : 'Price on WhatsApp'}</strong>
