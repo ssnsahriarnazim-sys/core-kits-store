@@ -1845,3 +1845,16 @@ a{color:inherit}
 .app .account-panel .customer-order-history .customer-order-card + .customer-order-card {
   margin-top: 4px !important;
 }
+
+
+/* Ensure My Order History heading is visible on the light account panel */
+.app .account-panel .customer-order-history > h3 {
+  color: #201e19 !important;
+  -webkit-text-fill-color: #201e19 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-size: 1.12rem !important;
+  font-weight: 900 !important;
+  line-height: 1.4 !important;
+  margin: 0 0 4px !important;
+}
