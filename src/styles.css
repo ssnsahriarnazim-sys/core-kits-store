@@ -1226,3 +1226,8 @@ a{color:inherit}
 .app .product:hover,.app .search:focus,.app .product-card-tools button{border-color:var(--store-accent,#b89a62)}
 .app .product-price strong,.app .detail-price,.app .product-category{color:var(--store-accent,#b89a62)}
 .app .top-announcement{background:var(--store-accent,#b89a62)}
+
+
+.footer-social-links{max-width:1100px;margin:0 auto 22px;display:flex;flex-wrap:wrap;gap:10px}
+.footer-social-links a{display:inline-flex;padding:9px 12px;border:1px solid #5a4b33;color:#e8ddc9;font-size:10px;font-weight:800;letter-spacing:1px;text-decoration:none}
+.footer-social-links a:hover{background:var(--store-accent,#b89a62);color:#171612;border-color:var(--store-accent,#b89a62)}
