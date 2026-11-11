@@ -514,8 +514,19 @@ sizes: (p.sizes || []).join(','),
       line_total: Number(item.product.price || 0) * item.quantity
     }));
     const { error: itemsError } = await supabase.from('order_items').insert(itemPayload);
+    if (itemsError) {
+      // Do not report success or clear the cart when item rows were not saved.
+      // Remove the parent order so its cascade also removes any partial item rows.
+      const { error: rollbackError } = await supabase.from('orders').delete().eq('id', data.id);
+      setCheckoutBusy(false);
+      if (rollbackError) {
+        setMessage('Order details could not be saved. Order reference ' + data.id + '. Please contact support before retrying. ' + itemsError.message);
+      } else {
+        setMessage('Order was not completed because item details could not be saved. Your cart is unchanged. Please try again. ' + itemsError.message);
+      }
+      return;
+    }
     setCheckoutBusy(false);
-    if (itemsError) setMessage('Order placed, but item details need database setup: ' + itemsError.message);
     setCheckoutResult(data.id);
     setCartItems([]);
     setShowCheckout(false);
@@ -523,6 +534,7 @@ sizes: (p.sizes || []).join(','),
     setCheckoutName('');
     setCheckoutPhone('');
     setCheckoutAddress('');
+    if (customer?.id) await loadCustomerOrders();
   }
 
   const filtered = products.filter(p =>
