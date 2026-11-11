@@ -25,7 +25,7 @@ export default function App() {
   const [checkoutBusy, setCheckoutBusy] = useState(false);
   const [checkoutResult, setCheckoutResult] = useState('');
   const [admin, setAdmin] = useState(false);
-  const isAdminRoute = window.location.pathname.replace(/\\/+$/, '') === '/admin';
+  const isAdminRoute = window.location.pathname === '/admin' || window.location.pathname === '/admin/';
   const [showLogin, setShowLogin] = useState(isAdminRoute);
   const [showAccount, setShowAccount] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
