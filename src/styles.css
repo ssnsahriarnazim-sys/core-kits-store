@@ -1801,3 +1801,24 @@ a{color:inherit}
   .app .tracking-modal-panel .tracking-result{padding:16px!important}
   .app .tracking-modal-panel .tracking-result p{font-size:14px!important}
 }
+
+
+/* Customer account: readable, itemized order history */
+.app .customer-order-history { display: grid; gap: 14px; margin-top: 22px; }
+.app .customer-order-history > h3 { color: #f8fafc; font-size: 1.05rem; font-weight: 800; }
+.app .customer-order-card { display: grid; gap: 12px; padding: 16px; border: 1px solid rgba(184,154,98,.32); border-radius: 14px; background: #111c2b; color: #f8fafc; text-align: left; }
+.app .customer-order-card-head, .app .customer-order-card-foot,
+.app .customer-order-card-items > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.app .customer-order-card-head > div { display: grid; gap: 5px; }
+.app .customer-order-card-head strong { color: #f8fafc; font-size: .9rem; }
+.app .customer-order-card-head > strong { color: #e6c98f; font-size: 1rem; white-space: nowrap; }
+.app .customer-order-card small { color: #cbd5e1; -webkit-text-fill-color: #cbd5e1; font-size: .76rem; overflow-wrap: anywhere; }
+.app .customer-order-card-items { display: grid; gap: 8px; padding: 11px 0; border-top: 1px solid rgba(255,255,255,.12); border-bottom: 1px solid rgba(255,255,255,.12); }
+.app .customer-order-card-items > div { color: #e2e8f0; font-size: .84rem; }
+.app .customer-order-card-items > div strong { color: #f8fafc; white-space: nowrap; }
+.app .customer-order-full-id { line-height: 1.5; }
+.app .customer-order-card-foot { color: #e6c98f; font-size: .82rem; font-weight: 700; flex-wrap: wrap; }
+@media (max-width: 480px) {
+  .app .customer-order-card { padding: 13px; }
+  .app .customer-order-card-items > div { font-size: .78rem; }
+}
