@@ -1160,7 +1160,7 @@ function ProductCard({product, onOpen, wished, compared, onWishlist, onCompare, 
   const discount = hasSale ? Math.round(((Number(product.original_price)-Number(product.price))/Number(product.original_price))*100) : 0;
   return (
     <article className="product product-clickable">
-      <div className="product-image" onClick={onOpen}>
+      <div className="product-image" role="button" tabIndex={0} aria-label={`View ${product.name} details`} onClick={onOpen} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } }}>
         {product.image_urls?.length ? <img src={product.image_urls[0]} alt={product.name}/> : product.image_url ? <img src={product.image_url} alt={product.name}/> : <span>CORE KITS.</span>}
         {hasSale && <span className="product-sale">-{discount}%</span>}
 
