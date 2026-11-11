@@ -1322,3 +1322,31 @@ a{color:inherit}
   .app .product.product-clickable .product-price strong{padding:5px 8px;font-size:12px}
   .app .product-detail-panel .detail-price{font-size:25px}
 }
+
+/* Product name, rating and price hierarchy */
+.app .product.product-clickable .product-info h3{
+  margin:0 0 7px;font-size:16px;font-weight:850;line-height:1.3;
+  letter-spacing:-.25px;color:var(--store-text,#171717);
+}
+.app .product.product-clickable .product-rating{
+  display:flex;align-items:center;gap:5px;margin:0 0 9px;
+  min-height:15px;font-size:11px;line-height:1;
+}
+.app .product.product-clickable .product-rating-stars{
+  color:#c49a43;letter-spacing:1px;font-size:12px;
+}
+.app .product.product-clickable .product-rating>strong{
+  color:#4d493f;font-size:11px;font-weight:800;
+}
+.app .product.product-clickable .product-rating-count{
+  color:#99948b;font-size:10px;font-weight:500;
+}
+.app .product.product-clickable .product-price strong{
+  font-size:16px;font-weight:900;letter-spacing:-.2px;
+}
+@media(max-width:700px){
+  .app .product.product-clickable .product-info h3{font-size:14px;font-weight:850;margin-bottom:6px}
+  .app .product.product-clickable .product-rating{margin-bottom:7px;gap:4px}
+  .app .product.product-clickable .product-rating-stars{font-size:11px}
+  .app .product.product-clickable .product-price strong{font-size:14px;font-weight:900}
+}
