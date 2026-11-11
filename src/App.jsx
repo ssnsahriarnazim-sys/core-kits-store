@@ -708,6 +708,9 @@ sizes: (p.sizes || []).join(','),
                 {message && <p className="account-error">{message}</p>}
               </>
             )}
+                {message && <p className="account-error">{message}</p>}
+              </>
+            )}
           </section>
         </div>
       )}
