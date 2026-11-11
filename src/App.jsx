@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from './supabase';
 
 const WA = '966564905417';
-const PUSH_VAPID_PUBLIC_KEY = 'BNMo-SQJxTv8CbJ_amkvc0aeJCqyNeFn6Ti2uPveUgEgoJFQrd2Z-Lo4VgSzS1j22B9q7UDw-rZbC15oe5gpkvQ';
+const PUSH_VAPID_PUBLIC_KEY = 'BN-Yx1yGBj4wd8B_SBg3OUjpUHNRh8kBFFmQ3b84KFTBqAdrmWVoXw82Qsbl56x4zCjOD0lWefRg8FfnF5XQnqA';
 function urlBase64ToUint8Array(value) {
   const padding = '='.repeat((4 - value.length % 4) % 4);
   const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
