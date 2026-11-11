@@ -772,7 +772,7 @@ sizes: (p.sizes || []).join(','),
             <button className="account-close" onClick={() => setShowAccount(false)} aria-label="Close account">×</button>
             <p className="eyebrow">CORE KITS MEMBER</p>
             <h2>My Account</h2>
-            {customer ? () : customer ? (
+            {customer ? (
               <>
                 <p className="account-muted">You are signed in as</p>
                 <strong className="account-email">{customer.email || 'Google account'}</strong>
