@@ -55,6 +55,7 @@ const [orders, setOrders] = useState([]);
 const [customerOrders, setCustomerOrders] = useState([]);
 const [customerOrdersLoading, setCustomerOrdersLoading] = useState(false);
 const [productReviews, setProductReviews] = useState([]);
+const [productRatingStats, setProductRatingStats] = useState({});
 const [reviewRating, setReviewRating] = useState(5);
 const [reviewText, setReviewText] = useState('');
 const [reviewBusy, setReviewBusy] = useState(false);
@@ -83,6 +84,26 @@ const [trackingLoading, setTrackingLoading] = useState(false);
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [bannerFile, setBannerFile] = useState(null);
+  useEffect(() => {
+    if (!products.length) { setProductRatingStats({}); return; }
+    let active = true;
+    async function loadRatingStats() {
+      const { data, error } = await supabase.from('product_reviews').select('product_id, rating');
+      if (error || !active) return;
+      const stats = {};
+      (data || []).forEach(review => {
+        if (!stats[review.product_id]) stats[review.product_id] = { total: 0, count: 0 };
+        stats[review.product_id].total += Number(review.rating) || 0;
+        stats[review.product_id].count += 1;
+      });
+      Object.keys(stats).forEach(id => {
+        stats[id].average = stats[id].total / stats[id].count;
+      });
+      setProductRatingStats(stats);
+    }
+    loadRatingStats();
+    return () => { active = false; };
+  }, [products]);
   useEffect(() => {
     if (!selectedProduct?.id) {
       setProductReviews([]);
@@ -639,7 +660,7 @@ sizes: (p.sizes || []).join(','),
 
       {storefrontSettings.choiceEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('choice') ?? 1}} className="featured-section">
         <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.choiceEyebrow}</p><h2>{storefrontSettings.choiceTitle}</h2></div><a href="#shop">VIEW ALL <b>↗</b></a></div>
-        <div className="products featured-products">{choiceProducts.map(p => <ProductCard key={'featured-' + p.id} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)} settings={storefrontSettings}/>)}</div>
+        <div className="products featured-products">{choiceProducts.map(p => <ProductCard key={'featured-' + p.id} product={p} ratingStats={productRatingStats[p.id]} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)} settings={storefrontSettings}/>)}</div>
       </section>}
       {storefrontSettings.recommendedEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('recommended') ?? 2}} className="featured-section recommended-section">
         <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.recommendedEyebrow}</p><h2>{storefrontSettings.recommendedTitle}</h2></div><a href="#shop">SHOP ALL <b>↗</b></a></div>
@@ -1155,7 +1176,7 @@ function ProductImageGallery({product}) {
   </div>;
 }
 
-function ProductCard({product, onOpen, wished, compared, onWishlist, onCompare, settings = {}}) {
+function ProductCard({product, ratingStats, onOpen, wished, compared, onWishlist, onCompare, settings = {}}) {
   const hasSale = Number(product.original_price) > Number(product.price);
   const discount = hasSale ? Math.round(((Number(product.original_price)-Number(product.price))/Number(product.original_price))*100) : 0;
   return (
@@ -1168,6 +1189,7 @@ function ProductCard({product, onOpen, wished, compared, onWishlist, onCompare, 
       <div className="product-info">
         {settings.showStockLabel !== false && <div className="product-category">{product.stock > 0 ? 'IN STOCK' : 'CHECK AVAILABILITY'}</div>}
         <h3>{product.name}</h3>
+        {ratingStats?.count > 0 && <div className="product-rating" aria-label={`Rated ${ratingStats.average.toFixed(1)} out of 5 from ${ratingStats.count} reviews`}><span className="product-rating-stars">{'★'.repeat(Math.round(ratingStats.average))}{'☆'.repeat(5-Math.round(ratingStats.average))}</span><strong>{ratingStats.average.toFixed(1)}</strong><span className="product-rating-count">({ratingStats.count})</span></div>}
         <div className="product-price">
           <strong>{product.price ? `৳${product.price}` : 'Price on WhatsApp'}</strong>
           {hasSale && <span className="original-price">৳{product.original_price}</span>}
