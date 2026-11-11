@@ -1184,3 +1184,27 @@ a{color:inherit}
  .shop{background:#f3f0e9}
  .footer-main{border-color:#484033}
 }
+
+
+/* Admin-managed storefront customization */
+.app { background: var(--store-bg, #f7f5f0); color: var(--store-text, #171717); }
+.app .logo span, .app .collection-heading h2 span { color: var(--store-accent, #b89a62); }
+.custom-store-banner { width: 100%; overflow: hidden; background: #eee; }
+.custom-store-banner img { display: block; width: 100%; height: auto; max-height: 560px; object-fit: cover; }
+.website-customizer { margin: 28px 0; padding: 24px; border: 1px solid #d8d1c4; border-radius: 14px; background: #fbfaf7; color: #24211c; }
+.website-customizer .customizer-heading { margin-bottom: 22px; }
+.website-customizer .customizer-heading h3 { margin: 4px 0 8px; font-size: 25px; }
+.website-customizer h4 { margin: 26px 0 12px; padding-bottom: 9px; border-bottom: 1px solid #ded8cd; font-size: 15px; letter-spacing: .04em; text-transform: uppercase; }
+.website-customizer label { display: block; margin: 10px 0 6px; font-size: 13px; font-weight: 700; }
+.website-customizer .customizer-check { display: flex; align-items: center; gap: 10px; margin: 9px 0; font-weight: 600; }
+.website-customizer .customizer-check input { width: 18px; height: 18px; accent-color: #a8874e; }
+.customizer-product-list { max-height: 220px; overflow: auto; padding: 12px; border: 1px solid #e2ddd4; border-radius: 9px; background: white; }
+.customizer-banner-preview { display: block; width: 100%; max-height: 220px; object-fit: contain; background: #eee; border-radius: 8px; margin: 12px 0; }
+.customizer-color-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.customizer-color-grid label { display: grid; gap: 8px; }
+.customizer-color-grid input { width: 100%; height: 44px; padding: 3px; border: 1px solid #ddd; border-radius: 7px; background: white; }
+@media(max-width:600px) {
+ .website-customizer { padding: 16px; margin: 18px 0; }
+ .customizer-color-grid { grid-template-columns: 1fr; }
+ .custom-store-banner img { max-height: 280px; }
+}
