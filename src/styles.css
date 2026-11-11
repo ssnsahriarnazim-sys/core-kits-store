@@ -1670,3 +1670,13 @@ a{color:inherit}
     max-width:560px!important;margin:auto!important;
   }
 }
+
+
+/* Admin-controlled product card typography */
+.app .product.product-clickable .product-info h3{
+  font-size:var(--product-name-size,18px)!important;
+  font-weight:900!important;line-height:1.22;letter-spacing:-.35px;
+}
+.app .product.product-clickable .product-price strong{
+  font-size:var(--product-price-size,19px)!important;font-weight:900!important;
+}
