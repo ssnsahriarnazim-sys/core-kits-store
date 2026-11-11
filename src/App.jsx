@@ -69,7 +69,7 @@ const [trackingLoading, setTrackingLoading] = useState(false);
   const defaultStorefrontSettings = {
     announcement: 'FREE DELIVERY UPDATES · PREMIUM FOOTBALL KITS · MADE FOR FANS', showAnnouncement: true, bannerUrl: '', showCustomBanner: true, showCategoryStrip: true, logoText: 'CORE KITS',
     navHome: 'HOME', navShop: 'SHOP ALL', navCollections: 'COLLECTIONS', navTracking: 'TRACK ORDER',
-    sectionOrder: ['choice','recommended','collections','tracking','shop'],
+    sectionOrder: ['choice','recommended','collections','shop'],
     categoryStripTitle: 'SHOP BY CATEGORY', allProductsLabel: 'ALL PRODUCTS', categoryStripLimit: 7, collectionTileLimit: 4,
     shopEyebrow: 'THE CORE KITS STORE', shopTitle: 'Explore All Products', shopDescription: 'Choose your team. Find your fit. Get match-day ready.', searchPlaceholder: 'Search your favourite team...',
     trackingEyebrow: 'ORDER TRACKING', trackingTitle: 'Track Your Order.', trackingDescription: 'Enter your Order ID and phone number to check your order status.', trackingButton: 'TRACK ORDER',
@@ -660,11 +660,11 @@ sizes: (p.sizes || []).join(','),
 
       {storefrontSettings.choiceEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('choice') ?? 1}} className="featured-section">
         <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.choiceEyebrow}</p><h2>{storefrontSettings.choiceTitle}</h2></div><a href="#shop">VIEW ALL <b>↗</b></a></div>
-        <div className="products featured-products">{choiceProducts.map(p => <ProductCard key={'featured-' + p.id} product={p} ratingStats={productRatingStats[p.id]} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)} settings={storefrontSettings}/>)}</div>
+        <div className="products featured-products">{choiceProducts.map(p => <ProductCard key={'featured-' + p.id} product={p} ratingStats={productRatingStats[p.id]} onOpen={() => setSelectedProduct(p)} settings={storefrontSettings}/>)}</div>
       </section>}
       {storefrontSettings.recommendedEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('recommended') ?? 2}} className="featured-section recommended-section">
         <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.recommendedEyebrow}</p><h2>{storefrontSettings.recommendedTitle}</h2></div><a href="#shop">SHOP ALL <b>↗</b></a></div>
-        <div className="products featured-products">{recommendedProducts.map(p => <ProductCard key={'recommended-' + p.id} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)} settings={storefrontSettings}/>)}</div>
+        <div className="products featured-products">{recommendedProducts.map(p => <ProductCard key={'recommended-' + p.id} product={p} ratingStats={productRatingStats[p.id]} onOpen={() => setSelectedProduct(p)} settings={storefrontSettings}/>)}</div>
       </section>}
 
       {storefrontSettings.collectionsEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('collections') ?? 3}} id="collections" className="collection-section">
@@ -724,6 +724,7 @@ sizes: (p.sizes || []).join(','),
             <h2>{selectedProduct.name}</h2>
             <p>{selectedProduct.description || 'Premium football kit. Wear your passion.'}</p>
             <div className="detail-price">৳{selectedProduct.price}{selectedProduct.original_price > selectedProduct.price && <del>৳{selectedProduct.original_price}</del>}</div>
+            {storefrontSettings.showProductTools !== false && <div className="product-detail-tools"><button type="button" onClick={()=>toggleWishlist(selectedProduct)}>{wishlist.includes(selectedProduct.id) ? '♥ SAVED TO WISHLIST' : '♡ ADD TO WISHLIST'}</button><button type="button" onClick={()=>toggleCompare(selectedProduct)}>{compareItems.includes(selectedProduct.id) ? '✓ ADDED TO COMPARE' : '⇄ COMPARE PRODUCT'}</button></div>}
             <ProductDetailActions product={selectedProduct} onAdd={addToCart} onBuyNow={buyNow} settings={storefrontSettings}/>
             <section className="product-reviews">
               <div className="reviews-heading">
@@ -798,7 +799,7 @@ sizes: (p.sizes || []).join(','),
             <p className="eyebrow">ORDER RECEIVED</p><h2>Thank you!</h2>
             <p>Your Order ID:</p><strong>{checkoutResult}</strong>
             <p className="account-muted">Save this ID and your phone number to track the order.</p>
-            <a className="account-link" href="#tracking" onClick={()=>setCheckoutResult('')}>Track your order →</a>
+            {storefrontSettings.trackingEnabled !== false && <a className="account-link" href="#tracking" onClick={e=>{e.preventDefault();setCheckoutResult('');setShowTracking(true);}}>Track your order →</a>}
           </section>
         </div>
       )}
@@ -812,7 +813,7 @@ sizes: (p.sizes || []).join(','),
               <>
                 <p className="account-muted">You are signed in as</p>
                 <strong className="account-email">{customer.email || 'Google account'}</strong>
-                <a className="account-link" href="#tracking" onClick={() => setShowAccount(false)}>Track an order →</a>
+                {storefrontSettings.trackingEnabled !== false && <a className="account-link" href="#tracking" onClick={e => {e.preventDefault();setShowAccount(false);setShowTracking(true);}}>Track an order →</a>}
                 <div className="customer-order-history">
                   <h3>My Order History</h3>
                   {customerOrdersLoading ? <p className="account-muted">Loading your orders...</p> :
@@ -958,7 +959,7 @@ sizes: (p.sizes || []).join(','),
                     <label>Product limit (1–12)</label><input className="search" type="number" min="1" max="12" value={storefrontSettings.recommendedLimit} onChange={e=>setStorefrontSettings({...storefrontSettings,recommendedLimit:Math.max(1,Math.min(12,Number(e.target.value)||1))})}/>
                     <h4>Homepage Section Order</h4>
                     <p className="customizer-help">Move sections up or down to change their order on the storefront.</p>
-                    {(storefrontSettings.sectionOrder || ['choice','recommended','collections','tracking','shop']).map((key,index)=><div className="section-order-row" key={key}><strong>{({choice:'Customer Choice',recommended:'Recommended Collection',collections:'Explore Collections',tracking:'Order Tracking',shop:'All Products Shop'})[key]}</strong><span><button type="button" disabled={index===0} onClick={()=>{const next=[...(storefrontSettings.sectionOrder || ['choice','recommended','collections','tracking','shop'])];[next[index-1],next[index]]=[next[index],next[index-1]];setStorefrontSettings({...storefrontSettings,sectionOrder:next});}}>↑</button><button type="button" disabled={index===4} onClick={()=>{const next=[...(storefrontSettings.sectionOrder || ['choice','recommended','collections','tracking','shop'])];[next[index+1],next[index]]=[next[index],next[index+1]];setStorefrontSettings({...storefrontSettings,sectionOrder:next});}}>↓</button></span></div>)}
+                    {(storefrontSettings.sectionOrder || ['choice','recommended','collections','shop']).map((key,index)=><div className="section-order-row" key={key}><strong>{({choice:'Customer Choice',recommended:'Recommended Collection',collections:'Explore Collections',shop:'All Products Shop'})[key]}</strong><span><button type="button" disabled={index===0} onClick={()=>{const next=[...(storefrontSettings.sectionOrder || ['choice','recommended','collections','shop'])];[next[index-1],next[index]]=[next[index],next[index-1]];setStorefrontSettings({...storefrontSettings,sectionOrder:next});}}>↑</button><button type="button" disabled={index===3} onClick={()=>{const next=[...(storefrontSettings.sectionOrder || ['choice','recommended','collections','shop'])];[next[index+1],next[index]]=[next[index],next[index+1]];setStorefrontSettings({...storefrontSettings,sectionOrder:next});}}>↓</button></span></div>)}
                     <h4>Other Homepage Sections</h4>
                     <label className="customizer-check"><input type="checkbox" checked={!!storefrontSettings.collectionsEnabled} onChange={e=>setStorefrontSettings({...storefrontSettings,collectionsEnabled:e.target.checked})}/> Show Explore Collections</label>
                     <label>Collections small heading</label><input className="search" value={storefrontSettings.collectionsEyebrow} onChange={e=>setStorefrontSettings({...storefrontSettings,collectionsEyebrow:e.target.value})}/>
@@ -994,8 +995,6 @@ sizes: (p.sizes || []).join(','),
                     <label><input type="checkbox" checked={storefrontSettings.showProductTools !== false} onChange={e=>setStorefrontSettings({...storefrontSettings,showProductTools:e.target.checked})}/> Show wishlist, compare & quick-view icons</label>
                     <label><input type="checkbox" checked={storefrontSettings.showStockLabel !== false} onChange={e=>setStorefrontSettings({...storefrontSettings,showStockLabel:e.target.checked})}/> Show product stock label</label>
                     <h4>Product & Floating Navigation Labels</h4>
-                    <label>Product select button</label><input className="search" value={storefrontSettings.productSelectLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,productSelectLabel:e.target.value})}/>
-                    <label>Product details button</label><input className="search" value={storefrontSettings.productDetailsLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,productDetailsLabel:e.target.value})}/>
                     <label>Add to cart button</label><input className="search" value={storefrontSettings.addCartLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,addCartLabel:e.target.value})}/>
                     <label>Buy now button</label><input className="search" value={storefrontSettings.buyNowLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,buyNowLabel:e.target.value})}/>
                     <label>Floating account label</label><input className="search" value={storefrontSettings.floatingAccountLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,floatingAccountLabel:e.target.value})}/>
