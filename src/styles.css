@@ -1451,3 +1451,110 @@ a{color:inherit}
   .app .navbar{background:var(--store-bg,#f7f5f0)!important}
   .app .navbar .header-icon,.app .navbar .logo{color:var(--store-text,#171717)!important}
 }
+
+
+/* CORE KITS full-site theme tokens: final cascade layer */
+.app{
+  background:var(--store-bg,#f7f5f0)!important;
+  color:var(--store-text,#171717)!important;
+  min-height:100vh;
+}
+.app .navbar,.app .featured-section,.app .collection-section,
+.app .shop,.app .tracking-section,.app .designer-strip{
+  background-color:var(--store-bg,#f7f5f0)!important;
+  color:var(--store-text,#171717)!important;
+}
+.app .navbar a,.app .navbar button,.app .navbar .header-icon,
+.app .navbar .desktop-links a,.app .logo,
+.app .featured-section h1,.app .featured-section h2,.app .featured-section h3,
+.app .collection-section h1,.app .collection-section h2,.app .collection-section h3,
+.app .shop h1,.app .shop h2,.app .shop h3,
+.app .shop p,.app .shop .section-heading>span,
+.app .designer-strip .designer-label,.app .designer-strip button{
+  color:var(--store-text,#171717)!important;
+}
+.app .eyebrow,.app .product-category,.app .logo span,
+.app .collection-heading h2 span{
+  color:var(--store-accent,#b89a62)!important;
+}
+.app button:not(.product-image):not(.account-close){
+  opacity:1;
+  text-shadow:none;
+}
+.app .shop-btn,.app .collection-heading>a,.app .view-product-button,
+.app .admin-submit,.app .tracking-box button,.app .detail-buy-now,
+.app .detail-actions button,.app .checkout-panel button,
+.app .cart-panel button,.app .review-form button,
+.app .filters button.active,.app .compare-dock button,
+.app .compare-grid button{
+  background:var(--store-accent,#b89a62)!important;
+  border-color:var(--store-accent,#b89a62)!important;
+  color:#171612!important;
+}
+.app .filters button:not(.active),.app .designer-strip button:not(.selected),
+.app .collection-tiles button{
+  background:color-mix(in srgb,var(--store-accent,#b89a62) 13%,var(--store-bg,#f7f5f0))!important;
+  border:1px solid color-mix(in srgb,var(--store-accent,#b89a62) 55%,transparent)!important;
+  color:var(--store-text,#171717)!important;
+}
+.app .collection-tiles button *{color:inherit!important}
+.app .product{background:color-mix(in srgb,var(--store-bg,#f7f5f0) 94%,var(--store-text,#171717))!important}
+.app .product-info h3,.app .product-info p,.app .product-info small,
+.app .product-price strong{color:var(--store-text,#171717)!important}
+.app .product-price .original-price{color:color-mix(in srgb,var(--store-text,#171717) 55%,transparent)!important}
+.app input,.app select,.app textarea,.app .search,.app .shop-sort,
+.app .detail-actions input,.app .checkout-panel input,.app .checkout-panel select{
+  color:var(--store-text,#171717)!important;
+  background:var(--store-bg,#f7f5f0)!important;
+  border-color:color-mix(in srgb,var(--store-text,#171717) 28%,transparent)!important;
+}
+.app input::placeholder,.app textarea::placeholder{color:color-mix(in srgb,var(--store-text,#171717) 55%,transparent)!important;opacity:1}
+.app .site-footer,.app footer{
+  background:color-mix(in srgb,var(--store-text,#171717) 92%,var(--store-bg,#f7f5f0))!important;
+  color:var(--store-bg,#f7f5f0)!important;
+}
+.app .site-footer *,.app footer *{color:inherit}
+.app .site-footer a,.app footer a,.app .site-footer button,.app footer button{
+  color:var(--store-bg,#f7f5f0)!important;
+}
+.app .floating-nav{
+  background:color-mix(in srgb,var(--store-text,#171717) 94%,var(--store-bg,#f7f5f0))!important;
+  border-color:var(--store-accent,#b89a62)!important;
+}
+.app .floating-nav button,.app .floating-nav a,
+.app .floating-nav button span,.app .floating-nav a span{
+  color:var(--store-bg,#f7f5f0)!important;opacity:1!important;
+}
+.app .account-overlay{
+  position:fixed!important;inset:0!important;display:grid!important;
+  visibility:visible!important;opacity:1!important;z-index:99999!important;
+  background:rgba(0,0,0,.68)!important;
+}
+.app .account-panel,.app .menu-panel{
+  display:block!important;visibility:visible!important;opacity:1!important;
+  position:relative!important;z-index:100000!important;
+  max-height:min(82vh,680px)!important;overflow-y:auto!important;
+  background:var(--store-bg,#f7f5f0)!important;
+  color:var(--store-text,#171717)!important;
+  border:1px solid var(--store-accent,#b89a62)!important;
+}
+.app .menu-panel h2,.app .menu-panel p,
+.app .menu-panel .eyebrow{color:var(--store-text,#171717)!important}
+.app .menu-panel>a,.app .menu-panel>button:not(.account-close){
+  display:flex!important;visibility:visible!important;opacity:1!important;
+  align-items:center!important;width:100%!important;min-height:52px!important;
+  padding:14px 10px!important;margin:0!important;
+  background:transparent!important;color:var(--store-text,#171717)!important;
+  border:0!important;border-bottom:1px solid color-mix(in srgb,var(--store-text,#171717) 20%,transparent)!important;
+  font-family:inherit!important;font-size:15px!important;font-weight:700!important;
+  line-height:1.4!important;text-align:left!important;text-decoration:none!important;
+}
+.app .menu-panel>a:hover,.app .menu-panel>button:not(.account-close):hover{
+  background:color-mix(in srgb,var(--store-accent,#b89a62) 18%,transparent)!important;
+}
+.app .account-close{
+  display:grid!important;place-items:center!important;visibility:visible!important;opacity:1!important;
+  width:42px!important;height:42px!important;border-radius:50%!important;
+  background:var(--store-text,#171717)!important;color:var(--store-bg,#f7f5f0)!important;
+  border:1px solid var(--store-accent,#b89a62)!important;
+}
