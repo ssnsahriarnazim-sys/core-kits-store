@@ -1680,3 +1680,19 @@ a{color:inherit}
 .app .product.product-clickable .product-price strong{
   font-size:var(--product-price-size,19px)!important;font-weight:900!important;
 }
+
+
+/* Product detail actions controlled from the Admin customizer */
+.app .product-detail-tools{
+  display:flex;flex-wrap:wrap;gap:9px;margin:14px 0 18px;
+}
+.app .product-detail-tools button{
+  flex:1 1 150px;min-height:42px;padding:10px 13px;
+  border:1px solid var(--store-accent,#b89a62)!important;
+  border-radius:var(--product-card-radius,8px);
+  background:transparent!important;color:var(--store-text,#171717)!important;
+  font-size:11px;font-weight:850;letter-spacing:.45px;
+}
+.app .product-detail-tools button:hover{
+  background:color-mix(in srgb,var(--store-accent,#b89a62) 17%,transparent)!important;
+}
