@@ -68,7 +68,7 @@ const [trackingLoading, setTrackingLoading] = useState(false);
     announcement: 'FREE DELIVERY UPDATES · PREMIUM FOOTBALL KITS · MADE FOR FANS', bannerUrl: '', logoText: 'CORE KITS',
     navHome: 'HOME', navShop: 'SHOP ALL', navCollections: 'COLLECTIONS', navTracking: 'TRACK ORDER',
     sectionOrder: ['choice','recommended','collections','tracking','shop'],
-    categoryStripTitle: 'SHOP BY CATEGORY', allProductsLabel: 'ALL PRODUCTS',
+    categoryStripTitle: 'SHOP BY CATEGORY', allProductsLabel: 'ALL PRODUCTS', categoryStripLimit: 7, collectionTileLimit: 4,
     shopEyebrow: 'THE CORE KITS STORE', shopTitle: 'Explore All Products', shopDescription: 'Choose your team. Find your fit. Get match-day ready.', searchPlaceholder: 'Search your favourite team...',
     trackingEyebrow: 'ORDER TRACKING', trackingTitle: 'Track Your Order.', trackingDescription: 'Enter your Order ID and phone number to check your order status.', trackingButton: 'TRACK ORDER',
     collectionTileCta: 'SHOP COLLECTION', footerShopHeading: 'SHOP', footerHelpHeading: 'HELP & SUPPORT', footerContactLabel: 'Contact on WhatsApp', footerAccountLabel: 'My Account', copyrightText: '© 2026 CORE KITS. ALL RIGHTS RESERVED.', footerBottomText: 'BUILT FOR THE LOVE OF THE GAME.', facebookUrl: '', instagramUrl: '', tiktokUrl: '', productSelectLabel: 'SELECT OPTIONS', productDetailsLabel: 'VIEW DETAILS', addCartLabel: 'ADD TO CART', buyNowLabel: 'BUY NOW', floatingAccountLabel: 'MY ACCOUNT', floatingCartLabel: 'CART', floatingShopLabel: 'SHOP', floatingMenuLabel: 'MENU',
@@ -633,7 +633,7 @@ sizes: (p.sizes || []).join(','),
       <section style={{order:-1}} className="designer-strip">
         <div className="designer-label">{storefrontSettings.categoryStripTitle || 'SHOP BY CATEGORY'}</div>
         <button className={category === 'All' ? 'selected' : ''} onClick={() => setCategory('All')}>{storefrontSettings.allProductsLabel || 'ALL PRODUCTS'}</button>
-        {categories.slice(0,7).map(c => <button key={c.id} className={category === c.id ? 'selected' : ''} onClick={() => {setCategory(c.id);document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}>{c.name}</button>)}
+        {categories.slice(0, Number(storefrontSettings.categoryStripLimit) || 7).map(c => <button key={c.id} className={category === c.id ? 'selected' : ''} onClick={() => {setCategory(c.id);document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}>{c.name}</button>)}
       </section>
 
       {storefrontSettings.choiceEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('choice') ?? 1}} className="featured-section">
@@ -648,7 +648,7 @@ sizes: (p.sizes || []).join(','),
       {storefrontSettings.collectionsEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('collections') ?? 3}} id="collections" className="collection-section">
         <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.collectionsEyebrow}</p><h2>{storefrontSettings.collectionsTitle}</h2></div><a href="#shop">ALL PRODUCTS <b>↗</b></a></div>
         <div className="collection-tiles">
-          {categories.slice(0,4).map((c,i) => <button key={c.id} onClick={() => {setCategory(c.id); document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}><span>0{i+1}</span><strong>{c.name}</strong><small>{storefrontSettings.collectionTileCta || 'SHOP COLLECTION'} ↗</small></button>)}
+          {categories.slice(0, Number(storefrontSettings.collectionTileLimit) || 4).map((c,i) => <button key={c.id} onClick={() => {setCategory(c.id); document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}><span>0{i+1}</span><strong>{c.name}</strong><small>{storefrontSettings.collectionTileCta || 'SHOP COLLECTION'} ↗</small></button>)}
         </div>
       </section>}
 {storefrontSettings.trackingEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('tracking') ?? 4}} id="tracking" className="tracking-section">
@@ -927,6 +927,8 @@ sizes: (p.sizes || []).join(','),
                     <label>Track order menu label</label><input className="search" value={storefrontSettings.navTracking || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,navTracking:e.target.value})}/>
                     <label>Category strip heading</label><input className="search" value={storefrontSettings.categoryStripTitle || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,categoryStripTitle:e.target.value})}/>
                     <label>All products label</label><input className="search" value={storefrontSettings.allProductsLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,allProductsLabel:e.target.value})}/>
+                    <label>Category menu items (1–12)</label><input className="search" type="number" min="1" max="12" value={storefrontSettings.categoryStripLimit || 7} onChange={e=>setStorefrontSettings({...storefrontSettings,categoryStripLimit:Math.max(1,Math.min(12,Number(e.target.value)||1))})}/>
+                    <label>Collection tiles (1–12)</label><input className="search" type="number" min="1" max="12" value={storefrontSettings.collectionTileLimit || 4} onChange={e=>setStorefrontSettings({...storefrontSettings,collectionTileLimit:Math.max(1,Math.min(12,Number(e.target.value)||1))})}/>
                     <h4>Shop Page Content</h4>
                     <label>Shop eyebrow</label><input className="search" value={storefrontSettings.shopEyebrow || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,shopEyebrow:e.target.value})}/>
                     <label>Shop title</label><input className="search" value={storefrontSettings.shopTitle || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,shopTitle:e.target.value})}/>
