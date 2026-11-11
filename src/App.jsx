@@ -64,6 +64,18 @@ const [orderLoading, setOrderLoading] = useState(false);
 const [trackingPhone, setTrackingPhone] = useState('');
 const [trackedOrder, setTrackedOrder] = useState(null);
 const [trackingLoading, setTrackingLoading] = useState(false);
+  const defaultStorefrontSettings = {
+    announcement: 'FREE DELIVERY UPDATES · PREMIUM FOOTBALL KITS · MADE FOR FANS', bannerUrl: '', logoText: 'CORE KITS',
+    choiceEyebrow: 'FAN FAVOURITES', choiceTitle: 'Customer Choice', choiceEnabled: true, choiceProductIds: [], choiceLimit: 4,
+    recommendedEnabled: true, recommendedEyebrow: 'HANDPICKED FOR YOU', recommendedTitle: 'Recommended Collection', recommendedCategoryId: 'all', recommendedLimit: 4,
+    collectionsEnabled: true, collectionsEyebrow: 'FIND YOUR STYLE', collectionsTitle: 'Explore Collections', trackingEnabled: true,
+    footerTagline: 'WEAR YOUR PASSION.', footerDescription: 'Football culture, premium kits and match-day essentials for every fan.',
+    backgroundColor: '#f7f5f0', accentColor: '#b89a62', textColor: '#171717'
+  };
+  const [storefrontSettings, setStorefrontSettings] = useState(defaultStorefrontSettings);
+  const [settingsBusy, setSettingsBusy] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [bannerFile, setBannerFile] = useState(null);
   useEffect(() => {
     if (!selectedProduct?.id) {
       setProductReviews([]);
@@ -137,6 +149,7 @@ const [trackingLoading, setTrackingLoading] = useState(false);
   useEffect(() => {
     loadProducts();
     loadCategories();
+    loadStorefrontSettings();
 
     supabase.auth.getSession().then(({ data, error }) => {
       if (error) {
@@ -223,6 +236,32 @@ async function updateOrderStatus(id, status) {
       .order('created_at', { ascending: false });
 
     if (!error) setProducts(data || []);
+  }
+
+  async function loadStorefrontSettings() {
+    const { data, error } = await supabase.from('storefront_settings').select('settings').eq('id', 'default').maybeSingle();
+    if (!error && data?.settings) setStorefrontSettings({ ...defaultStorefrontSettings, ...data.settings });
+    setSettingsLoaded(true);
+  }
+  async function saveStorefrontSettings(e) {
+    e.preventDefault(); setSettingsBusy(true); setMessage('');
+    try {
+      const nextSettings = { ...storefrontSettings };
+      if (bannerFile) {
+        const ext = bannerFile.name.split('.').pop() || 'jpg';
+        const path = 'storefront-banner-' + Date.now() + '.' + ext;
+        const { error: uploadError } = await supabase.storage.from('product-images').upload(path, bannerFile, { upsert: true });
+        if (uploadError) throw uploadError;
+        const { data } = supabase.storage.from('product-images').getPublicUrl(path);
+        nextSettings.bannerUrl = data.publicUrl;
+      }
+      const { error } = await supabase.from('storefront_settings').upsert({ id: 'default', settings: nextSettings, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+      if (error) throw error;
+      setStorefrontSettings(nextSettings); setBannerFile(null); setMessage('Website customization saved successfully!');
+    } catch (error) {
+      setMessage(error.code === '42P01' ? 'Customization database setup is not complete. Apply the new SQL migration first.' : error.message || 'Could not save website settings.');
+    }
+    setSettingsBusy(false);
   }
 
   async function loadCategories() {
@@ -538,6 +577,12 @@ sizes: (p.sizes || []).join(','),
     if (customer?.id) await loadCustomerOrders();
   }
 
+  const choiceProducts = storefrontSettings.choiceProductIds?.length
+    ? storefrontSettings.choiceProductIds.map(id => products.find(p => p.id === id)).filter(Boolean)
+    : products.filter(p => p.is_active).slice(0, Number(storefrontSettings.choiceLimit) || 4);
+  const recommendedProducts = products.filter(p => p.is_active &&
+    (storefrontSettings.recommendedCategoryId === 'all' || p.category_id === storefrontSettings.recommendedCategoryId)
+  ).slice(0, Number(storefrontSettings.recommendedLimit) || 4);
   const filtered = products.filter(p =>
     p.is_active &&
     p.name.toLowerCase().includes(search.toLowerCase()) &&
@@ -562,7 +607,7 @@ sizes: (p.sizes || []).join(','),
 
   return (
     <div className="app">
-      <div className="top-announcement">FREE DELIVERY UPDATES · PREMIUM FOOTBALL KITS · MADE FOR FANS</div>
+      <div className="top-announcement">{storefrontSettings.announcement}</div>
       <header className="navbar">
         <button className="header-icon mobile-menu-trigger" onClick={() => setShowMenu(true)} aria-label="Open menu">☰</button>
         <a className="logo" href="#">CORE<span>KITS</span><i>.</i></a>
@@ -577,26 +622,29 @@ sizes: (p.sizes || []).join(','),
         </div>
       </header>
 
+      {storefrontSettings.bannerUrl && <section className="custom-store-banner"><img src={storefrontSettings.bannerUrl} alt="CORE KITS custom banner"/></section>}
       <section className="designer-strip">
         <div className="designer-label">SHOP BY<br/>CATEGORY</div>
         <button className={category === 'All' ? 'selected' : ''} onClick={() => setCategory('All')}>ALL PRODUCTS</button>
         {categories.slice(0,7).map(c => <button key={c.id} className={category === c.id ? 'selected' : ''} onClick={() => {setCategory(c.id);document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}>{c.name}</button>)}
       </section>
 
-      <section className="featured-section">
-        <div className="collection-heading"><div><p className="eyebrow">FAN FAVOURITES</p><h2>Customer <span>Choice</span></h2></div><a href="#shop">VIEW ALL <b>↗</b></a></div>
-        <div className="products featured-products">
-          {filtered.slice(0,4).map(p => <ProductCard key={`featured-${p.id}`} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)}/>)}
-        </div>
-      </section>
+      {storefrontSettings.choiceEnabled && <section className="featured-section">
+        <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.choiceEyebrow}</p><h2>{storefrontSettings.choiceTitle}</h2></div><a href="#shop">VIEW ALL <b>↗</b></a></div>
+        <div className="products featured-products">{choiceProducts.map(p => <ProductCard key={'featured-' + p.id} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)}/>)}</div>
+      </section>}
+      {storefrontSettings.recommendedEnabled && <section className="featured-section recommended-section">
+        <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.recommendedEyebrow}</p><h2>{storefrontSettings.recommendedTitle}</h2></div><a href="#shop">SHOP ALL <b>↗</b></a></div>
+        <div className="products featured-products">{recommendedProducts.map(p => <ProductCard key={'recommended-' + p.id} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)}/>)}</div>
+      </section>}
 
-      <section id="collections" className="collection-section">
-        <div className="collection-heading"><div><p className="eyebrow">FIND YOUR STYLE</p><h2>Explore <span>Collections</span></h2></div><a href="#shop">ALL PRODUCTS <b>↗</b></a></div>
+      {storefrontSettings.collectionsEnabled && <section id="collections" className="collection-section">
+        <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.collectionsEyebrow}</p><h2>{storefrontSettings.collectionsTitle}</h2></div><a href="#shop">ALL PRODUCTS <b>↗</b></a></div>
         <div className="collection-tiles">
           {categories.slice(0,4).map((c,i) => <button key={c.id} onClick={() => {setCategory(c.id); document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}><span>0{i+1}</span><strong>{c.name}</strong><small>SHOP COLLECTION ↗</small></button>)}
         </div>
-      </section>
-<section id="tracking" className="tracking-section">
+      </section>}
+{storefrontSettings.trackingEnabled && <section id="tracking" className="tracking-section">
   <div className="tracking-box">
     <p className="eyebrow">ORDER TRACKING</p>
     <h2>Track Your Order.</h2>
@@ -634,7 +682,7 @@ sizes: (p.sizes || []).join(','),
       </div>
     )}
   </div>
-</section>
+</section>}
       <main id="shop" className="shop">
         <div className="section-heading">
           <div><p className="eyebrow">THE CORE KITS STORE</p><h2>Explore <span>All Products</span></h2><p className="shop-intro">Choose your team. Find your fit. Get match-day ready.</p></div>
@@ -665,7 +713,7 @@ sizes: (p.sizes || []).join(','),
       </main>
 
       <footer className="site-footer">
-        <div className="footer-main"><div><a className="logo" href="#">CORE<span>KITS</span><i>.</i></a><p>WEAR YOUR PASSION.</p><small>Football culture, premium kits and match-day essentials for every fan.</small></div><div><b>SHOP</b><a href="#shop">All Products</a><a href="#collections">Collections</a><a href="#tracking">Track Order</a></div><div><b>HELP & SUPPORT</b><a href="#tracking">Order Tracking</a><a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">Contact on WhatsApp</a><button onClick={()=>setShowAccount(true)}>My Account</button></div></div>
+        <div className="footer-main"><div><a className="logo" href="#">CORE<span>KITS</span><i>.</i></a><p>{storefrontSettings.footerTagline}</p><small>{storefrontSettings.footerDescription}</small></div><div><b>SHOP</b><a href="#shop">All Products</a><a href="#collections">Collections</a><a href="#tracking">Track Order</a></div><div><b>HELP & SUPPORT</b><a href="#tracking">Order Tracking</a><a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">Contact on WhatsApp</a><button onClick={()=>setShowAccount(true)}>My Account</button></div></div>
         <div className="footer-bottom"><small>© 2026 CORE KITS. ALL RIGHTS RESERVED.</small><small>BUILT FOR THE LOVE OF THE GAME.</small></div>
       </footer>
 <nav className="floating-nav">
@@ -856,6 +904,44 @@ sizes: (p.sizes || []).join(','),
                 <button className="admin-submit" onClick={logout}>
                   LOG OUT
                 </button>
+
+                <section className="website-customizer">
+                  <div className="customizer-heading"><p className="eyebrow">STORE CONTROL</p><h3>Website Customization</h3><p>Control homepage content and sections from one place.</p></div>
+                  {!settingsLoaded ? <p>Loading website settings...</p> : <form onSubmit={saveStorefrontSettings}>
+                    <h4>Brand & Announcement</h4>
+                    <label>Store logo text</label><input className="search" value={storefrontSettings.logoText} onChange={e=>setStorefrontSettings({...storefrontSettings,logoText:e.target.value})}/>
+                    <label>Top announcement bar</label><input className="search" value={storefrontSettings.announcement} onChange={e=>setStorefrontSettings({...storefrontSettings,announcement:e.target.value})}/>
+                    <h4>Custom Banner</h4>
+                    {storefrontSettings.bannerUrl && <img className="customizer-banner-preview" src={storefrontSettings.bannerUrl} alt="Current banner"/>}
+                    <label>Upload banner image</label><input className="search" type="file" accept="image/*" onChange={e=>setBannerFile(e.target.files?.[0] || null)}/>
+                    {storefrontSettings.bannerUrl && <button type="button" className="admin-submit" onClick={()=>setStorefrontSettings({...storefrontSettings,bannerUrl:''})}>REMOVE BANNER</button>}
+                    <h4>Customer Choice</h4>
+                    <label className="customizer-check"><input type="checkbox" checked={!!storefrontSettings.choiceEnabled} onChange={e=>setStorefrontSettings({...storefrontSettings,choiceEnabled:e.target.checked})}/> Show section</label>
+                    <label>Small heading</label><input className="search" value={storefrontSettings.choiceEyebrow} onChange={e=>setStorefrontSettings({...storefrontSettings,choiceEyebrow:e.target.value})}/>
+                    <label>Section title</label><input className="search" value={storefrontSettings.choiceTitle} onChange={e=>setStorefrontSettings({...storefrontSettings,choiceTitle:e.target.value})}/>
+                    <label>Product limit (1–12)</label><input className="search" type="number" min="1" max="12" value={storefrontSettings.choiceLimit} onChange={e=>setStorefrontSettings({...storefrontSettings,choiceLimit:Math.max(1,Math.min(12,Number(e.target.value)||1))})}/>
+                    <label>Select products (empty selection = automatic latest products)</label>
+                    <div className="customizer-product-list">{products.filter(p=>p.is_active).map(p=><label key={p.id} className="customizer-check"><input type="checkbox" checked={(storefrontSettings.choiceProductIds||[]).includes(p.id)} onChange={e=>setStorefrontSettings({...storefrontSettings,choiceProductIds:e.target.checked?[...(storefrontSettings.choiceProductIds||[]),p.id]:(storefrontSettings.choiceProductIds||[]).filter(id=>id!==p.id)})}/>{p.name}</label>)}</div>
+                    <h4>Recommended Collection</h4>
+                    <label className="customizer-check"><input type="checkbox" checked={!!storefrontSettings.recommendedEnabled} onChange={e=>setStorefrontSettings({...storefrontSettings,recommendedEnabled:e.target.checked})}/> Show section</label>
+                    <label>Small heading</label><input className="search" value={storefrontSettings.recommendedEyebrow} onChange={e=>setStorefrontSettings({...storefrontSettings,recommendedEyebrow:e.target.value})}/>
+                    <label>Section title</label><input className="search" value={storefrontSettings.recommendedTitle} onChange={e=>setStorefrontSettings({...storefrontSettings,recommendedTitle:e.target.value})}/>
+                    <label>Category</label><select className="search" value={storefrontSettings.recommendedCategoryId} onChange={e=>setStorefrontSettings({...storefrontSettings,recommendedCategoryId:e.target.value})}><option value="all">All categories</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>
+                    <label>Product limit (1–12)</label><input className="search" type="number" min="1" max="12" value={storefrontSettings.recommendedLimit} onChange={e=>setStorefrontSettings({...storefrontSettings,recommendedLimit:Math.max(1,Math.min(12,Number(e.target.value)||1))})}/>
+                    <h4>Other Homepage Sections</h4>
+                    <label className="customizer-check"><input type="checkbox" checked={!!storefrontSettings.collectionsEnabled} onChange={e=>setStorefrontSettings({...storefrontSettings,collectionsEnabled:e.target.checked})}/> Show Explore Collections</label>
+                    <label>Collections small heading</label><input className="search" value={storefrontSettings.collectionsEyebrow} onChange={e=>setStorefrontSettings({...storefrontSettings,collectionsEyebrow:e.target.value})}/>
+                    <label>Collections title</label><input className="search" value={storefrontSettings.collectionsTitle} onChange={e=>setStorefrontSettings({...storefrontSettings,collectionsTitle:e.target.value})}/>
+                    <label className="customizer-check"><input type="checkbox" checked={!!storefrontSettings.trackingEnabled} onChange={e=>setStorefrontSettings({...storefrontSettings,trackingEnabled:e.target.checked})}/> Show Order Tracking</label>
+                    <h4>Footer</h4><label>Tagline</label><input className="search" value={storefrontSettings.footerTagline} onChange={e=>setStorefrontSettings({...storefrontSettings,footerTagline:e.target.value})}/>
+                    <label>Description</label><textarea className="search" value={storefrontSettings.footerDescription} onChange={e=>setStorefrontSettings({...storefrontSettings,footerDescription:e.target.value})}/>
+                    <h4>Storefront Colors</h4>
+                    <div className="customizer-color-grid"><label>Background<input type="color" value={storefrontSettings.backgroundColor} onChange={e=>setStorefrontSettings({...storefrontSettings,backgroundColor:e.target.value})}/></label><label>Accent<input type="color" value={storefrontSettings.accentColor} onChange={e=>setStorefrontSettings({...storefrontSettings,accentColor:e.target.value})}/></label><label>Text<input type="color" value={storefrontSettings.textColor} onChange={e=>setStorefrontSettings({...storefrontSettings,textColor:e.target.value})}/></label></div>
+                    <button className="admin-submit" disabled={settingsBusy}>{settingsBusy ? 'SAVING...' : 'SAVE WEBSITE CUSTOMIZATION'}</button>
+                    <button type="button" className="admin-submit" onClick={()=>{setStorefrontSettings(defaultStorefrontSettings);setBannerFile(null);}}>RESET TO DEFAULTS</button>
+                    {message && <p>{message}</p>}
+                  </form>}
+                </section>
 
                 <div id="admin-form">
                   <h3>{editing ? 'Edit Product' : 'Add New Product'}</h3>
