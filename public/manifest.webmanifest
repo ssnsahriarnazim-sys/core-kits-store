@@ -1,0 +1,12 @@
+{
+  "name": "CORE KITS Admin",
+  "short_name": "CORE KITS",
+  "start_url": "/admin",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#101d35",
+  "theme_color": "#101d35",
+  "icons": [
+    { "src": "/icons/core-kits.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
