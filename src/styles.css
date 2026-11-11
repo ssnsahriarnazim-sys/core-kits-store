@@ -984,3 +984,16 @@ footer{background:#030811;border-top:1px solid #173451;color:#fff}
  .compare-grid{grid-template-columns:1fr}
  .compare-image{height:210px}
 }
+
+.header-count{position:absolute;right:0;top:0;display:grid;place-items:center;min-width:15px;height:15px;border-radius:20px;background:#087ff5;color:#fff;font-size:8px}
+.wishlist-panel{width:min(650px,95vw);max-height:88vh;overflow:auto}
+.wishlist-list{display:grid;gap:10px}
+.wishlist-item{display:grid;grid-template-columns:74px 1fr 30px;align-items:center;gap:13px;padding:10px 0;border-bottom:1px solid #25415e}
+.wishlist-item>img,.wishlist-placeholder{width:74px;height:84px;object-fit:cover;background:#071321;border-radius:3px}
+.wishlist-placeholder{display:grid;place-items:center;color:#168cff;font:700 23px 'Oswald',sans-serif}
+.wishlist-item>div:nth-child(2){display:grid;gap:7px}
+.wishlist-item b{font-size:13px}
+.wishlist-item strong{color:#52afff;font-size:13px}
+.wishlist-item button{justify-self:start;border:1px solid #168cff;background:transparent;color:#dceeff;padding:7px 10px;font-size:9px;font-weight:800}
+.wishlist-item .wishlist-remove{border:0;background:transparent;color:#ff9aaa;font-size:22px;padding:3px}
+@media(max-width:480px){.wishlist-item{grid-template-columns:62px 1fr 24px}.wishlist-item>img,.wishlist-placeholder{width:62px;height:72px}}
