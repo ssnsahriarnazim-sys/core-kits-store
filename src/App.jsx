@@ -71,7 +71,7 @@ const [trackingLoading, setTrackingLoading] = useState(false);
     categoryStripTitle: 'SHOP BY CATEGORY', allProductsLabel: 'ALL PRODUCTS',
     shopEyebrow: 'THE CORE KITS STORE', shopTitle: 'Explore All Products', shopDescription: 'Choose your team. Find your fit. Get match-day ready.', searchPlaceholder: 'Search your favourite team...',
     trackingEyebrow: 'ORDER TRACKING', trackingTitle: 'Track Your Order.', trackingDescription: 'Enter your Order ID and phone number to check your order status.', trackingButton: 'TRACK ORDER',
-    collectionTileCta: 'SHOP COLLECTION', footerShopHeading: 'SHOP', footerHelpHeading: 'HELP & SUPPORT', footerContactLabel: 'Contact on WhatsApp', footerAccountLabel: 'My Account', copyrightText: '© 2026 CORE KITS. ALL RIGHTS RESERVED.', footerBottomText: 'BUILT FOR THE LOVE OF THE GAME.',
+    collectionTileCta: 'SHOP COLLECTION', footerShopHeading: 'SHOP', footerHelpHeading: 'HELP & SUPPORT', footerContactLabel: 'Contact on WhatsApp', footerAccountLabel: 'My Account', copyrightText: '© 2026 CORE KITS. ALL RIGHTS RESERVED.', footerBottomText: 'BUILT FOR THE LOVE OF THE GAME.', facebookUrl: '', instagramUrl: '', tiktokUrl: '',
     choiceEyebrow: 'FAN FAVOURITES', choiceTitle: 'Customer Choice', choiceEnabled: true, choiceProductIds: [], choiceLimit: 4,
     recommendedEnabled: true, recommendedEyebrow: 'HANDPICKED FOR YOU', recommendedTitle: 'Recommended Collection', recommendedCategoryId: 'all', recommendedLimit: 4,
     collectionsEnabled: true, collectionsEyebrow: 'FIND YOUR STYLE', collectionsTitle: 'Explore Collections', trackingEnabled: true,
@@ -722,6 +722,7 @@ sizes: (p.sizes || []).join(','),
 
       <footer className="site-footer">
         <div className="footer-main"><div><a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a><p>{storefrontSettings.footerTagline}</p><small>{storefrontSettings.footerDescription}</small></div><div><b>{storefrontSettings.footerShopHeading || 'SHOP'}</b><a href="#shop">{storefrontSettings.allProductsLabel || 'All Products'}</a><a href="#collections">Collections</a><a href="#tracking">Track Order</a></div><div><b>{storefrontSettings.footerHelpHeading || 'HELP & SUPPORT'}</b><a href="#tracking">Order Tracking</a><a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">{storefrontSettings.footerContactLabel || 'Contact on WhatsApp'}</a><button onClick={()=>setShowAccount(true)}>{storefrontSettings.footerAccountLabel || 'My Account'}</button></div></div>
+        <div className="footer-social-links">{storefrontSettings.facebookUrl && <a href={storefrontSettings.facebookUrl} target="_blank" rel="noreferrer">FACEBOOK ↗</a>}{storefrontSettings.instagramUrl && <a href={storefrontSettings.instagramUrl} target="_blank" rel="noreferrer">INSTAGRAM ↗</a>}{storefrontSettings.tiktokUrl && <a href={storefrontSettings.tiktokUrl} target="_blank" rel="noreferrer">TIKTOK ↗</a>}</div>
         <div className="footer-bottom"><small>{storefrontSettings.copyrightText || '© 2026 CORE KITS. ALL RIGHTS RESERVED.'}</small><small>{storefrontSettings.footerBottomText || 'BUILT FOR THE LOVE OF THE GAME.'}</small></div>
       </footer>
 <nav className="floating-nav">
@@ -970,6 +971,10 @@ sizes: (p.sizes || []).join(','),
                     <label>Footer bottom line</label><input className="search" value={storefrontSettings.footerBottomText || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,footerBottomText:e.target.value})}/>
                     <label>Tagline</label><input className="search" value={storefrontSettings.footerTagline} onChange={e=>setStorefrontSettings({...storefrontSettings,footerTagline:e.target.value})}/>
                     <label>Description</label><textarea className="search" value={storefrontSettings.footerDescription} onChange={e=>setStorefrontSettings({...storefrontSettings,footerDescription:e.target.value})}/>
+                    <h4>Social Media Links</h4>
+                    <label>Facebook page URL</label><input className="search" type="url" placeholder="https://facebook.com/yourpage" value={storefrontSettings.facebookUrl || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,facebookUrl:e.target.value})}/>
+                    <label>Instagram profile URL</label><input className="search" type="url" placeholder="https://instagram.com/yourprofile" value={storefrontSettings.instagramUrl || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,instagramUrl:e.target.value})}/>
+                    <label>TikTok profile URL</label><input className="search" type="url" placeholder="https://tiktok.com/@yourprofile" value={storefrontSettings.tiktokUrl || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,tiktokUrl:e.target.value})}/>
                     <h4>Typography</h4>
                     <label>Website font</label><select className="search" value={storefrontSettings.fontFamily || 'DM Sans'} onChange={e=>setStorefrontSettings({...storefrontSettings,fontFamily:e.target.value})}><option value="DM Sans">DM Sans — Modern</option><option value="Arial">Arial — Clean</option><option value="Georgia">Georgia — Editorial</option><option value="Oswald">Oswald — Bold</option></select>
                     <h4>Storefront Colors</h4>
