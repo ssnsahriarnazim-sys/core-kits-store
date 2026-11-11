@@ -668,9 +668,7 @@ sizes: (p.sizes || []).join(','),
         <div className="account-overlay product-overlay" onClick={() => setSelectedProduct(null)}>
           <section className="account-panel product-detail-panel" onClick={e => e.stopPropagation()}>
             <button className="account-close" onClick={() => setSelectedProduct(null)}>×</button>
-            <div className="detail-gallery">
-              {(selectedProduct.image_urls?.length ? selectedProduct.image_urls : selectedProduct.image_url ? [selectedProduct.image_url] : []).map((url,i)=><img key={i} src={url} alt={selectedProduct.name}/>)}
-            </div>
+            <ProductImageGallery product={selectedProduct}/>
             <p className="eyebrow">CORE KITS PRODUCT</p>
             <h2>{selectedProduct.name}</h2>
             <p>{selectedProduct.description || 'Premium football kit. Wear your passion.'}</p>
@@ -690,7 +688,7 @@ sizes: (p.sizes || []).join(','),
               <div className="cart-line" key={item.product.id + item.size + (item.sleeve || 'Short Sleeve') + (item.customName || '') + (item.customNumber || '')}>
                 <div><strong>{item.product.name}</strong><small>Size: {item.size}{item.customName ? ` · Name: ${item.customName}` : ''}{item.customNumber ? ` · No: ${item.customNumber}` : ''} · {item.sleeve || 'Short Sleeve'} · ৳{item.product.price}</small></div>
                 <input aria-label="Quantity" type="number" min="1" max={item.product.stock} value={item.quantity} onChange={e=>updateCartQuantity(item.product.id,item.size,Number(e.target.value),item.customName || '',item.customNumber || '',item.sleeve || 'Short Sleeve')}/>
-                <button onClick={()=>updateCartQuantity(item.product.id,item.size,0,item.customName || '',item.customNumber || '')}>Remove</button>
+                <button onClick={()=>updateCartQuantity(item.product.id,item.size,0,item.customName || '',item.customNumber || '',item.sleeve || 'Short Sleeve')}>Remove</button>
               </div>
             ))}
             {cartItems.length>0 && <>
@@ -989,6 +987,17 @@ sizes: (p.sizes || []).join(','),
       )}
     </div>
   );
+}
+
+function ProductImageGallery({product}) {
+  const images = product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : [];
+  const [active,setActive] = useState(0);
+  if (!images.length) return <div className="detail-gallery detail-gallery-empty"><div className="detail-main-image">CORE KITS.</div></div>;
+  const current = images[Math.min(active,images.length-1)];
+  return <div className="detail-gallery detail-gallery-interactive">
+    <div className="detail-main-image"><img src={current} alt={product.name}/><span className="detail-image-count">{Math.min(active+1,images.length)} / {images.length}</span></div>
+    {images.length>1 && <div className="detail-thumbnails">{images.map((url,i)=><button type="button" key={url+i} className={active===i?'active':''} onClick={()=>setActive(i)} aria-label={`View product image ${i+1}`}><img src={url} alt=""/></button>)}</div>}
+  </div>;
 }
 
 function ProductCard({product, onOpen, wished, compared, onWishlist, onCompare}) {
