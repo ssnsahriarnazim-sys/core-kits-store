@@ -1208,3 +1208,13 @@ a{color:inherit}
  .customizer-color-grid { grid-template-columns: 1fr; }
  .custom-store-banner img { max-height: 280px; }
 }
+
+
+/* Admin homepage section ordering */
+.homepage-sections{display:flex;flex-direction:column}
+.section-order-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;margin:7px 0;border:1px solid #e2ddd4;border-radius:8px;background:#fff}
+.section-order-row strong{font-size:13px}
+.section-order-row span{display:flex;gap:6px}
+.section-order-row button{width:34px;height:32px;border:1px solid #d6cbb8;border-radius:6px;background:#f7f3eb;color:#29251e;font-weight:900;cursor:pointer}
+.section-order-row button:disabled{opacity:.35;cursor:not-allowed}
+.customizer-help{margin:0 0 10px;color:#756d60;font-size:12px;line-height:1.5}
