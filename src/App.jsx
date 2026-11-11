@@ -584,7 +584,7 @@ sizes: (p.sizes || []).join(','),
   }
 
   const choiceProducts = storefrontSettings.choiceProductIds?.length
-    ? storefrontSettings.choiceProductIds.map(id => products.find(p => p.id === id)).filter(Boolean)
+    ? storefrontSettings.choiceProductIds.map(id => products.find(p => p.id === id)).filter(p => p?.is_active).slice(0, Number(storefrontSettings.choiceLimit) || 4)
     : products.filter(p => p.is_active).slice(0, Number(storefrontSettings.choiceLimit) || 4);
   const recommendedProducts = products.filter(p => p.is_active &&
     (storefrontSettings.recommendedCategoryId === 'all' || p.category_id === storefrontSettings.recommendedCategoryId)
@@ -864,9 +864,9 @@ sizes: (p.sizes || []).join(','),
           <section className="account-panel menu-panel" onClick={e => e.stopPropagation()}>
             <button className="account-close" onClick={() => setShowMenu(false)} aria-label="Close menu">×</button>
             <p className="eyebrow">CORE KITS</p><h2>Menu</h2>
-            <a href="#" onClick={() => setShowMenu(false)}>⌂　Home</a>
-            <a href="#shop" onClick={() => setShowMenu(false)}>⚽　Shop Collection</a>
-            <a href="#tracking" onClick={() => setShowMenu(false)}>▣　Track Order</a>
+            <a href="#" onClick={() => setShowMenu(false)}>⌂　{storefrontSettings.navHome || 'Home'}</a>
+            <a href="#shop" onClick={() => setShowMenu(false)}>⚽　{storefrontSettings.navShop || 'Shop Collection'}</a>
+            <a href="#tracking" onClick={() => setShowMenu(false)}>▣　{storefrontSettings.navTracking || 'Track Order'}</a>
             <button onClick={() => { setShowMenu(false); setShowAccount(true); }}>♙　My Account</button>
             <a href={`https://wa.me/${WA}`} target="_blank" rel="noreferrer">☏　Contact Us</a>
           </section>
