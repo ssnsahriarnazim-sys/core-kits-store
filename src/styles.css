@@ -1261,3 +1261,25 @@ a{color:inherit}
 .app .product.product-clickable .view-product-button,.app .product.product-clickable .product-card-tools{display:none!important}
 .app .product.product-clickable .product-image:focus-visible{outline:2px solid var(--store-accent,#b89a62);outline-offset:3px}
 @media(max-width:700px){.app .products{gap:16px 11px}.app .product.product-clickable .product-image{aspect-ratio:3 / 4}.app .product.product-clickable .product-info{padding-top:9px}.app .product.product-clickable .product-price strong{font-size:13px}}
+
+
+/* Make the product details close control unmistakable on every screen */
+.product-detail-panel{position:relative;padding-top:66px!important}
+.product-detail-panel>.account-close{
+  position:absolute;top:14px;right:14px;z-index:30;
+  display:grid;place-items:center;
+  width:46px;height:46px;min-width:46px;min-height:46px;
+  padding:0!important;margin:0;
+  border:2px solid #b9975b!important;border-radius:50%!important;
+  background:#211f1a!important;color:#fff!important;
+  font-size:30px!important;font-weight:700;line-height:1;
+  box-shadow:0 4px 16px #0004;opacity:1;cursor:pointer;
+}
+.product-detail-panel>.account-close:hover{
+  background:#b9975b!important;color:#171612!important;
+  transform:scale(1.05);
+}
+@media(max-width:700px){
+  .product-detail-panel{padding-top:62px!important}
+  .product-detail-panel>.account-close{top:10px;right:10px;width:44px;height:44px;min-width:44px;min-height:44px}
+}
