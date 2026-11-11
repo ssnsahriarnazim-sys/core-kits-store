@@ -67,6 +67,7 @@ const [trackingLoading, setTrackingLoading] = useState(false);
   const defaultStorefrontSettings = {
     announcement: 'FREE DELIVERY UPDATES · PREMIUM FOOTBALL KITS · MADE FOR FANS', bannerUrl: '', logoText: 'CORE KITS',
     navHome: 'HOME', navShop: 'SHOP ALL', navCollections: 'COLLECTIONS', navTracking: 'TRACK ORDER',
+    sectionOrder: ['choice','recommended','collections','tracking','shop'],
     categoryStripTitle: 'SHOP BY CATEGORY', allProductsLabel: 'ALL PRODUCTS',
     shopEyebrow: 'THE CORE KITS STORE', shopTitle: 'Explore All Products', shopDescription: 'Choose your team. Find your fit. Get match-day ready.', searchPlaceholder: 'Search your favourite team...',
     trackingEyebrow: 'ORDER TRACKING', trackingTitle: 'Track Your Order.', trackingDescription: 'Enter your Order ID and phone number to check your order status.', trackingButton: 'TRACK ORDER',
@@ -634,22 +635,22 @@ sizes: (p.sizes || []).join(','),
         {categories.slice(0,7).map(c => <button key={c.id} className={category === c.id ? 'selected' : ''} onClick={() => {setCategory(c.id);document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}>{c.name}</button>)}
       </section>
 
-      {storefrontSettings.choiceEnabled && <section className="featured-section">
+      {storefrontSettings.choiceEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('choice') ?? 1}} className="featured-section">
         <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.choiceEyebrow}</p><h2>{storefrontSettings.choiceTitle}</h2></div><a href="#shop">VIEW ALL <b>↗</b></a></div>
         <div className="products featured-products">{choiceProducts.map(p => <ProductCard key={'featured-' + p.id} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)}/>)}</div>
       </section>}
-      {storefrontSettings.recommendedEnabled && <section className="featured-section recommended-section">
+      {storefrontSettings.recommendedEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('recommended') ?? 2}} className="featured-section recommended-section">
         <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.recommendedEyebrow}</p><h2>{storefrontSettings.recommendedTitle}</h2></div><a href="#shop">SHOP ALL <b>↗</b></a></div>
         <div className="products featured-products">{recommendedProducts.map(p => <ProductCard key={'recommended-' + p.id} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)}/>)}</div>
       </section>}
 
-      {storefrontSettings.collectionsEnabled && <section id="collections" className="collection-section">
+      {storefrontSettings.collectionsEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('collections') ?? 3}} id="collections" className="collection-section">
         <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.collectionsEyebrow}</p><h2>{storefrontSettings.collectionsTitle}</h2></div><a href="#shop">ALL PRODUCTS <b>↗</b></a></div>
         <div className="collection-tiles">
           {categories.slice(0,4).map((c,i) => <button key={c.id} onClick={() => {setCategory(c.id); document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}><span>0{i+1}</span><strong>{c.name}</strong><small>{storefrontSettings.collectionTileCta || 'SHOP COLLECTION'} ↗</small></button>)}
         </div>
       </section>}
-{storefrontSettings.trackingEnabled && <section id="tracking" className="tracking-section">
+{storefrontSettings.trackingEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('tracking') ?? 4}} id="tracking" className="tracking-section">
   <div className="tracking-box">
     <p className="eyebrow">{storefrontSettings.trackingEyebrow || 'ORDER TRACKING'}</p>
     <h2>{storefrontSettings.trackingTitle || 'Track Your Order.'}</h2>
@@ -688,7 +689,7 @@ sizes: (p.sizes || []).join(','),
     )}
   </div>
 </section>}
-      <main id="shop" className="shop">
+      <main id="shop" style={{order: storefrontSettings.sectionOrder?.indexOf('shop') ?? 5}} className="shop">
         <div className="section-heading">
           <div><p className="eyebrow">{storefrontSettings.shopEyebrow || 'THE CORE KITS STORE'}</p><h2>{storefrontSettings.shopTitle || 'Explore All Products'}</h2><p className="shop-intro">{storefrontSettings.shopDescription || 'Choose your team. Find your fit. Get match-day ready.'}</p></div>
           <span>{filtered.length} PRODUCTS</span>
@@ -945,6 +946,9 @@ sizes: (p.sizes || []).join(','),
                     <label>Section title</label><input className="search" value={storefrontSettings.recommendedTitle} onChange={e=>setStorefrontSettings({...storefrontSettings,recommendedTitle:e.target.value})}/>
                     <label>Category</label><select className="search" value={storefrontSettings.recommendedCategoryId} onChange={e=>setStorefrontSettings({...storefrontSettings,recommendedCategoryId:e.target.value})}><option value="all">All categories</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>
                     <label>Product limit (1–12)</label><input className="search" type="number" min="1" max="12" value={storefrontSettings.recommendedLimit} onChange={e=>setStorefrontSettings({...storefrontSettings,recommendedLimit:Math.max(1,Math.min(12,Number(e.target.value)||1))})}/>
+                    <h4>Homepage Section Order</h4>
+                    <p className="customizer-help">Move sections up or down to change their order on the storefront.</p>
+                    {(storefrontSettings.sectionOrder || ['choice','recommended','collections','tracking','shop']).map((key,index)=><div className="section-order-row" key={key}><strong>{({choice:'Customer Choice',recommended:'Recommended Collection',collections:'Explore Collections',tracking:'Order Tracking',shop:'All Products Shop'})[key]}</strong><span><button type="button" disabled={index===0} onClick={()=>{const next=[...(storefrontSettings.sectionOrder || ['choice','recommended','collections','tracking','shop'])];[next[index-1],next[index]]=[next[index],next[index-1]];setStorefrontSettings({...storefrontSettings,sectionOrder:next});}}>↑</button><button type="button" disabled={index===4} onClick={()=>{const next=[...(storefrontSettings.sectionOrder || ['choice','recommended','collections','tracking','shop'])];[next[index+1],next[index]]=[next[index],next[index+1]];setStorefrontSettings({...storefrontSettings,sectionOrder:next});}}>↓</button></span></div>)}
                     <h4>Other Homepage Sections</h4>
                     <label className="customizer-check"><input type="checkbox" checked={!!storefrontSettings.collectionsEnabled} onChange={e=>setStorefrontSettings({...storefrontSettings,collectionsEnabled:e.target.checked})}/> Show Explore Collections</label>
                     <label>Collections small heading</label><input className="search" value={storefrontSettings.collectionsEyebrow} onChange={e=>setStorefrontSettings({...storefrontSettings,collectionsEyebrow:e.target.value})}/>
