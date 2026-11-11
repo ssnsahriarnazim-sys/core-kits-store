@@ -76,7 +76,7 @@ const [trackingLoading, setTrackingLoading] = useState(false);
     recommendedEnabled: true, recommendedEyebrow: 'HANDPICKED FOR YOU', recommendedTitle: 'Recommended Collection', recommendedCategoryId: 'all', recommendedLimit: 4,
     collectionsEnabled: true, collectionsEyebrow: 'FIND YOUR STYLE', collectionsTitle: 'Explore Collections', trackingEnabled: true,
     footerTagline: 'WEAR YOUR PASSION.', footerDescription: 'Football culture, premium kits and match-day essentials for every fan.',
-    backgroundColor: '#f7f5f0', accentColor: '#b89a62', textColor: '#171717'
+    backgroundColor: '#f7f5f0', accentColor: '#b89a62', textColor: '#171717', fontFamily: 'DM Sans'
   };
   const [storefrontSettings, setStorefrontSettings] = useState(defaultStorefrontSettings);
   const [settingsBusy, setSettingsBusy] = useState(false);
@@ -612,7 +612,7 @@ sizes: (p.sizes || []).join(','),
   const compareProducts = products.filter(p => compareItems.includes(p.id));
 
   return (
-    <div className="app" style={{'--store-bg':storefrontSettings.backgroundColor,'--store-accent':storefrontSettings.accentColor,'--store-text':storefrontSettings.textColor}}>
+    <div className="app" style={{'--store-bg':storefrontSettings.backgroundColor,'--store-accent':storefrontSettings.accentColor,'--store-text':storefrontSettings.textColor,'--store-font':storefrontSettings.fontFamily || 'DM Sans'}}>
       <div className="top-announcement">{storefrontSettings.announcement}</div>
       <header className="navbar">
         <button className="header-icon mobile-menu-trigger" onClick={() => setShowMenu(true)} aria-label="Open menu">☰</button>
@@ -970,6 +970,8 @@ sizes: (p.sizes || []).join(','),
                     <label>Footer bottom line</label><input className="search" value={storefrontSettings.footerBottomText || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,footerBottomText:e.target.value})}/>
                     <label>Tagline</label><input className="search" value={storefrontSettings.footerTagline} onChange={e=>setStorefrontSettings({...storefrontSettings,footerTagline:e.target.value})}/>
                     <label>Description</label><textarea className="search" value={storefrontSettings.footerDescription} onChange={e=>setStorefrontSettings({...storefrontSettings,footerDescription:e.target.value})}/>
+                    <h4>Typography</h4>
+                    <label>Website font</label><select className="search" value={storefrontSettings.fontFamily || 'DM Sans'} onChange={e=>setStorefrontSettings({...storefrontSettings,fontFamily:e.target.value})}><option value="DM Sans">DM Sans — Modern</option><option value="Arial">Arial — Clean</option><option value="Georgia">Georgia — Editorial</option><option value="Oswald">Oswald — Bold</option></select>
                     <h4>Storefront Colors</h4>
                     <div className="customizer-color-grid"><label>Background<input type="color" value={storefrontSettings.backgroundColor} onChange={e=>setStorefrontSettings({...storefrontSettings,backgroundColor:e.target.value})}/></label><label>Accent<input type="color" value={storefrontSettings.accentColor} onChange={e=>setStorefrontSettings({...storefrontSettings,accentColor:e.target.value})}/></label><label>Text<input type="color" value={storefrontSettings.textColor} onChange={e=>setStorefrontSettings({...storefrontSettings,textColor:e.target.value})}/></label></div>
                     <button className="admin-submit" disabled={settingsBusy}>{settingsBusy ? 'SAVING...' : 'SAVE WEBSITE CUSTOMIZATION'}</button>
