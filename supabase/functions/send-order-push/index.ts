@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
       `${supabaseUrl}/rest/v1/admin_push_subscriptions?select=subscription,user_id`,
       { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } },
     );
-    if (!response.ok) throw new Error("Could not load push subscriptions");
+    if (!response.ok) { const details = await response.text(); throw new Error(`Could not load push subscriptions (${response.status}): ${details}`); }
     const subscriptions = await response.json();
 
     const payload = JSON.stringify({
