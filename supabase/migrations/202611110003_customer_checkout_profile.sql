@@ -12,6 +12,9 @@ create table if not exists public.customer_profiles (
 
 alter table public.customer_profiles enable row level security;
 
+-- Allow signed-in customers to reach their own profile rows; RLS restricts each row to auth.uid().
+grant select, insert, update on table public.customer_profiles to authenticated;
+
 do $$
 begin
   if not exists (select 1 from pg_policies where schemaname='public' and tablename='customer_profiles' and policyname='Customers read own profile') then
