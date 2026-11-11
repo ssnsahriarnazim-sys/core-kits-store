@@ -3,7 +3,8 @@ create extension if not exists pg_net with schema extensions;
 create extension if not exists supabase_vault with schema vault;
 
 create table if not exists public.admin_push_subscriptions (
-  user_id uuid primary key references auth.users(id) on delete cascade,
+  id boolean primary key default true check (id = true),
+  user_id uuid not null unique references auth.users(id) on delete cascade,
   endpoint text not null unique,
   subscription jsonb not null,
   updated_at timestamptz not null default now()
@@ -18,8 +19,9 @@ with check (exists (select 1 from public.admin_users a where a.user_id = auth.ui
 grant select, insert, update, delete on public.admin_push_subscriptions to authenticated;
 
 -- The webhook secret is stored in Supabase Vault, never in browser code or Git.
-select vault.create_secret('ck_push_hook_2026_11_najim_7f4c9d2a', 'core_kits_push_webhook_secret', 'Authenticates the database-to-Edge-Function order notification call')
-where not exists (select 1 from vault.decrypted_secrets where name = 'core_kits_push_webhook_secret');
+-- Before enabling notifications, create this Vault secret manually using the same random value
+-- configured as PUSH_WEBHOOK_SECRET in the Edge Function secrets:
+-- select vault.create_secret('PASTE_YOUR_PRIVATE_WEBHOOK_SECRET', 'core_kits_push_webhook_secret', 'CORE KITS push webhook authentication');
 
 create or replace function public.notify_admin_new_order_push()
 returns trigger
