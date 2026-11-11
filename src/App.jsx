@@ -696,7 +696,7 @@ sizes: (p.sizes || []).join(','),
               </>
             ) : (
               <>
-                <p className="account-muted">Use your Gmail and password to ${customerAuthMode === 'signup' ? 'create a CORE KITS account' : 'log in'}.</p>
+                <p className="account-muted">Use your Gmail and password to {customerAuthMode === 'signup' ? 'create a CORE KITS account' : 'log in'}.</p>
                 <form onSubmit={customerPasswordAuth}>
                   <input className="search" type="email" placeholder="Enter your Gmail address" value={email} onChange={e => setEmail(e.target.value)} required />
                   <input className="search" type="password" placeholder="Password (minimum 6 characters)" value={password} onChange={e => setPassword(e.target.value)} minLength="6" autoComplete={customerAuthMode === 'signup' ? 'new-password' : 'current-password'} required />
