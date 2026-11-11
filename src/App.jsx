@@ -1163,20 +1163,15 @@ function ProductCard({product, onOpen, wished, compared, onWishlist, onCompare, 
       <div className="product-image" onClick={onOpen}>
         {product.image_urls?.length ? <img src={product.image_urls[0]} alt={product.name}/> : product.image_url ? <img src={product.image_url} alt={product.name}/> : <span>CORE KITS.</span>}
         {hasSale && <span className="product-sale">-{discount}%</span>}
-        {settings.showProductTools !== false && <div className="product-card-tools">
-          <button type="button" className={wished?'is-active':''} aria-label="Add to wishlist" title="Wishlist" onClick={onWishlist}>{wished?'♥':'♡'}</button>
-          <button type="button" className={compared?'is-active':''} aria-label="Compare product" title="Compare" onClick={onCompare}>⇄</button>
-          <button type="button" aria-label="Quick view" title="Quick view" onClick={onOpen}>⌕</button>
-        </div>}
+
       </div>
       <div className="product-info">
-        {settings.showStockLabel !== false && <div className="product-category">{product.stock > 0 ? 'READY TO SHIP' : 'CHECK AVAILABILITY'}</div>}
-        <h3 onClick={onOpen}>{product.name}</h3>
+        {settings.showStockLabel !== false && <div className="product-category">{product.stock > 0 ? 'IN STOCK' : 'CHECK AVAILABILITY'}</div>}
+        <h3>{product.name}</h3>
         <div className="product-price">
           <strong>{product.price ? `৳${product.price}` : 'Price on WhatsApp'}</strong>
           {hasSale && <span className="original-price">৳{product.original_price}</span>}
         </div>
-        <button type="button" className="view-product-button" onClick={onOpen}>{product.stock > 0 ? (settings.productSelectLabel || 'SELECT OPTIONS') : (settings.productDetailsLabel || 'VIEW DETAILS')} <b>↗</b></button>
       </div>
     </article>
   );
