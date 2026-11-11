@@ -271,20 +271,22 @@ async function trackOrder(e) {
   setTrackingLoading(true);
   setTrackedOrder(null);
 
-  const { data, error } = await supabase.rpc('track_order', {
-    p_order_id: trackingId.trim(),
-    p_phone: trackingPhone.trim()
-  });
+  try {
+    const { data, error } = await supabase.rpc('track_order_details', {
+      p_order_id: trackingId.trim(),
+      p_phone: trackingPhone.trim()
+    });
 
-  if (error) {
-    alert('Tracking failed: ' + error.message);
-  } else if (!data || data.length === 0) {
-    alert('No order found. Check Order ID and phone number.');
-  } else {
-    setTrackedOrder(data[0]);
+    if (error) {
+      alert('Tracking failed: ' + error.message);
+    } else if (!data) {
+      alert('No order found. Check Order ID and phone number.');
+    } else {
+      setTrackedOrder(data);
+    }
+  } finally {
+    setTrackingLoading(false);
   }
-
-  setTrackingLoading(false);
 }
 async function updateOrderStatus(id, status) {
   const { error } = await supabase
@@ -904,7 +906,22 @@ sizes: (p.sizes || []).join(','),
                 <input className="search" placeholder="Enter Phone Number" value={trackingPhone} onChange={e => setTrackingPhone(e.target.value)} required/>
                 <button className="admin-submit" disabled={trackingLoading}>{trackingLoading ? 'CHECKING...' : (storefrontSettings.trackingButton || 'TRACK ORDER')}</button>
               </form>
-              {trackedOrder && <div className="tracking-result"><h3>{trackedOrder.product_name}</h3><p>Size: {trackedOrder.size}</p><p>Quantity: {trackedOrder.quantity}</p><p>Total: ৳{trackedOrder.total_price ?? 'Not set'}</p><h3>Status: {trackedOrder.status}</h3></div>}
+              {trackedOrder && <div className="tracking-result">
+                <p><strong>Order ID:</strong> {trackedOrder.id}</p>
+                <h3>Order Status: {trackedOrder.status || 'Pending'}</h3>
+                <p><strong>Customer:</strong> {trackedOrder.customer_name}</p>
+                <p><strong>Phone:</strong> {trackedOrder.phone}</p>
+                <p><strong>Delivery Address:</strong> {trackedOrder.address}</p>
+                <h4>Order Items</h4>
+                {(trackedOrder.order_items || []).length > 0 ? trackedOrder.order_items.map((item, index) => <div className="tracking-item" key={item.id || index}>
+                  <strong>{item.product_name}</strong>
+                  <p>Size: {item.size || '—'} · Qty: {item.quantity}</p>
+                  <p>Unit price: ৳{item.unit_price} · Subtotal: ৳{item.line_total}</p>
+                </div>) : <p>{trackedOrder.product_name} · Size: {trackedOrder.size || '—'} · Qty: {trackedOrder.quantity}</p>}
+                <p><strong>Subtotal:</strong> ৳{trackedOrder.subtotal ?? '—'}</p>
+                <p><strong>Delivery Fee:</strong> ৳{trackedOrder.delivery_fee ?? '—'}</p>
+                <h3>Total: ৳{trackedOrder.total_price ?? 'Not set'}</h3>
+              </div>}
             </div>
           </section>
         </div>
