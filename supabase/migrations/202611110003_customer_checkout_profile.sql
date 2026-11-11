@@ -12,23 +12,19 @@ create table if not exists public.customer_profiles (
 
 alter table public.customer_profiles enable row level security;
 
-drop policy if exists "Customers read own profile" on public.customer_profiles;
-create policy "Customers read own profile"
-on public.customer_profiles for select to authenticated
-using (user_id = auth.uid());
-
-drop policy if exists "Customers insert own profile" on public.customer_profiles;
-create policy "Customers insert own profile"
-on public.customer_profiles for insert to authenticated
-with check (user_id = auth.uid());
-
-drop policy if exists "Customers update own profile" on public.customer_profiles;
-create policy "Customers update own profile"
-on public.customer_profiles for update to authenticated
-using (user_id = auth.uid())
-with check (user_id = auth.uid());
-
-grant select, insert, update on table public.customer_profiles to authenticated;
+do $$
+begin
+  if not exists (select 1 from pg_policies where schemaname='public' and tablename='customer_profiles' and policyname='Customers read own profile') then
+    create policy "Customers read own profile" on public.customer_profiles for select to authenticated using (user_id = auth.uid());
+  end if;
+  if not exists (select 1 from pg_policies where schemaname='public' and tablename='customer_profiles' and policyname='Customers insert own profile') then
+    create policy "Customers insert own profile" on public.customer_profiles for insert to authenticated with check (user_id = auth.uid());
+  end if;
+  if not exists (select 1 from pg_policies where schemaname='public' and tablename='customer_profiles' and policyname='Customers update own profile') then
+    create policy "Customers update own profile" on public.customer_profiles for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+  end if;
+end
+$$;
 
 -- RLS policies govern row access; these grants allow the intended operations to reach RLS.
 grant select on table public.product_reviews to anon, authenticated;
