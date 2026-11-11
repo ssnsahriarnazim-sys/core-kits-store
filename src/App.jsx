@@ -27,6 +27,8 @@ export default function App() {
   const [password, setPassword] = useState('');
   const [customerAuthMode, setCustomerAuthMode] = useState('login');
   const [customerAuthBusy, setCustomerAuthBusy] = useState(false);
+  const [recoveryMode, setRecoveryMode] = useState(false);
+  const [resetNewPassword, setResetNewPassword] = useState('');
   const [form, setForm] = useState({
   name: '',
   description: '',
@@ -86,7 +88,12 @@ const [trackingLoading, setTrackingLoading] = useState(false);
 
     // Do not call Supabase APIs inside onAuthStateChange: it can deadlock
     // while the auth lock is held. Defer the admin check until the callback ends.
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setRecoveryMode(true);
+        setShowAccount(true);
+        setMessage('Enter your new password below.');
+      }
       setCustomer(session?.user || null);
       if (session?.user) {
         window.setTimeout(() => checkAdmin(), 0);
@@ -230,6 +237,40 @@ if (data) {
     } else {
       setPassword('');
       setMessage(customerAuthMode === 'signup' ? 'Account created successfully!' : 'Login successful!');
+    }
+    setCustomerAuthBusy(false);
+  }
+
+  async function requestPasswordReset() {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setMessage('Enter your Gmail address first.');
+      return;
+    }
+    setCustomerAuthBusy(true);
+    setMessage('');
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+      redirectTo: window.location.origin
+    });
+    setMessage(error ? error.message : 'Password reset link sent. Check your Gmail inbox.');
+    setCustomerAuthBusy(false);
+  }
+
+  async function saveNewPassword(e) {
+    e.preventDefault();
+    if (resetNewPassword.length < 6) {
+      setMessage('Password must be at least 6 characters.');
+      return;
+    }
+    setCustomerAuthBusy(true);
+    setMessage('');
+    const { error } = await supabase.auth.updateUser({ password: resetNewPassword });
+    if (error) {
+      setMessage(error.message);
+    } else {
+      setRecoveryMode(false);
+      setResetNewPassword('');
+      setMessage('Password updated successfully.');
     }
     setCustomerAuthBusy(false);
   }
@@ -676,7 +717,16 @@ sizes: (p.sizes || []).join(','),
             <button className="account-close" onClick={() => setShowAccount(false)} aria-label="Close account">×</button>
             <p className="eyebrow">CORE KITS MEMBER</p>
             <h2>My Account</h2>
-            {customer ? (
+            {recoveryMode ? (
+              <>
+                <p className="account-muted">Create a new password for your CORE KITS account.</p>
+                <form onSubmit={saveNewPassword}>
+                  <input className="search" type="password" placeholder="New password (minimum 6 characters)" value={resetNewPassword} onChange={e => setResetNewPassword(e.target.value)} minLength="6" autoComplete="new-password" required />
+                  <button className="account-action" disabled={customerAuthBusy}>{customerAuthBusy ? 'PLEASE WAIT...' : 'UPDATE PASSWORD'}</button>
+                </form>
+                {message && <p className="account-error">{message}</p>}
+              </>
+            ) : customer ? (
               <>
                 <p className="account-muted">You are signed in as</p>
                 <strong className="account-email">{customer.email || 'Google account'}</strong>
@@ -702,6 +752,7 @@ sizes: (p.sizes || []).join(','),
                   <input className="search" type="password" placeholder="Password (minimum 6 characters)" value={password} onChange={e => setPassword(e.target.value)} minLength="6" autoComplete={customerAuthMode === 'signup' ? 'new-password' : 'current-password'} required />
                   <button className="account-action" disabled={customerAuthBusy}>{customerAuthBusy ? 'PLEASE WAIT...' : customerAuthMode === 'signup' ? 'CREATE ACCOUNT' : 'LOG IN'}</button>
                 </form>
+                {customerAuthMode === 'login' && <button type="button" className="detail-buy-now" disabled={customerAuthBusy} onClick={requestPasswordReset}>FORGOT PASSWORD?</button>}
                 <button type="button" className="detail-buy-now" disabled={customerAuthBusy} onClick={() => { setCustomerAuthMode(customerAuthMode === 'signup' ? 'login' : 'signup'); setMessage(''); setPassword(''); }}>
                   {customerAuthMode === 'signup' ? 'ALREADY HAVE AN ACCOUNT? LOG IN' : 'NEW CUSTOMER? CREATE ACCOUNT'}
                 </button>
