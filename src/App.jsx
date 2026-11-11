@@ -437,18 +437,18 @@ sizes: (p.sizes || []).join(','),
     }
   }
 
-  function addToCart(product, size, quantity) {
+  function addToCart(product, size, quantity, customName = '', customNumber = '') {
     setCartItems(current => {
-      const existing = current.find(item => item.product.id === product.id && item.size === size);
+      const existing = current.find(item => item.product.id === product.id && item.size === size && item.customName === customName && item.customNumber === customNumber);
       if (existing) return current.map(item => item === existing ? {...item, quantity: Math.min(Number(product.stock || 99), item.quantity + quantity)} : item);
-      return [...current, {product, size, quantity}];
+      return [...current, {product, size, quantity, customName, customNumber}];
     });
     setSelectedProduct(null);
     setMessage('Added to cart!');
   }
 
-  function buyNow(product, size, quantity) {
-    setCartItems([{product, size, quantity}]);
+  function buyNow(product, size, quantity, customName = '', customNumber = '') {
+    setCartItems([{product, size, quantity, customName, customNumber}]);
     setSelectedProduct(null);
     setShowCheckout(true);
   }
@@ -469,7 +469,7 @@ sizes: (p.sizes || []).join(','),
     e.preventDefault();
     if (!cartItems.length) return;
     setCheckoutBusy(true);
-    const itemNames = cartItems.map(item => `${item.product.name} (Size: ${item.size} × ${item.quantity})`).join(' | ');
+    const itemNames = cartItems.map(item => `${item.product.name} (Size: ${item.size}${item.customName ? `, Name: ${item.customName}` : ''}${item.customNumber ? `, Number: ${item.customNumber}` } × ${item.quantity})`).join(' | ');
     const totalQuantity = cartItems.reduce((sum,item) => sum + item.quantity, 0);
     const {data, error} = await supabase.from('orders').insert({
       customer_name: checkoutName.trim(),
@@ -494,7 +494,7 @@ sizes: (p.sizes || []).join(','),
     }
     const itemPayload = cartItems.map(item => ({
       order_id: data.id, product_id: item.product.id, product_name: item.product.name,
-      size: item.size, quantity: item.quantity, unit_price: Number(item.product.price || 0),
+      size: [item.size, item.customName && `Name: ${item.customName}`, item.customNumber && `No: ${item.customNumber}`].filter(Boolean).join(' / '), quantity: item.quantity, unit_price: Number(item.product.price || 0),
       line_total: Number(item.product.price || 0) * item.quantity
     }));
     const { error: itemsError } = await supabase.from('order_items').insert(itemPayload);
@@ -687,7 +687,7 @@ sizes: (p.sizes || []).join(','),
             <p className="eyebrow">YOUR SELECTION</p><h2>Shopping Cart</h2>
             {!cartItems.length ? <p className="account-muted">Your cart is empty.</p> : cartItems.map(item=>(
               <div className="cart-line" key={item.product.id + item.size}>
-                <div><strong>{item.product.name}</strong><small>Size: {item.size} · ৳{item.product.price}</small></div>
+                <div><strong>{item.product.name}</strong><small>Size: {item.size}{item.customName ? ` · Name: ${item.customName}` : ''}{item.customNumber ? ` · No: ${item.customNumber}` : ''} · ৳{item.product.price}</small></div>
                 <input aria-label="Quantity" type="number" min="1" max={item.product.stock} value={item.quantity} onChange={e=>updateCartQuantity(item.product.id,item.size,Number(e.target.value))}/>
                 <button onClick={()=>updateCartQuantity(item.product.id,item.size,0)}>Remove</button>
               </div>
@@ -1020,15 +1020,21 @@ function ProductCard({product, onOpen, wished, compared, onWishlist, onCompare})
 function ProductDetailActions({product,onAdd,onBuyNow}) {
   const [size,setSize]=useState(product.sizes?.[0] || '');
   const [quantity,setQuantity]=useState(1);
+  const [customName,setCustomName]=useState('');
+  const [customNumber,setCustomNumber]=useState('');
   return <div className="detail-actions">
     <label>Choose size</label>
     <select className="search" value={size} onChange={e=>setSize(e.target.value)}>
       {(product.sizes?.length ? product.sizes : ['M','L','XL','XXL']).map(s=><option key={s} value={s}>{s}</option>)}
     </select>
+    <label>Custom name on jersey (optional)</label>
+    <input className="search" maxLength="18" placeholder="e.g. NAJIM" value={customName} onChange={e=>setCustomName(e.target.value.toUpperCase())}/>
+    <label>Custom number (optional)</label>
+    <input className="search" inputMode="numeric" maxLength="2" placeholder="e.g. 10" value={customNumber} onChange={e=>setCustomNumber(e.target.value.replace(/\D/g,'').slice(0,2))}/>
     <label>Quantity</label>
     <input className="search" type="number" min="1" max={product.stock || 1} value={quantity} onChange={e=>setQuantity(Math.max(1,Math.min(Number(product.stock)||1,Number(e.target.value)||1)))}/>
-    <button className="account-action" disabled={product.stock<1} onClick={()=>onAdd(product,size,quantity)}>ADD TO CART</button>
-    <button className="detail-buy-now" disabled={product.stock<1} onClick={()=>onBuyNow(product,size,quantity)}>BUY NOW ↗</button>
-    <p className="account-muted">Checkout from your cart when you're ready.</p>
+    <button className="account-action" disabled={product.stock<1} onClick={()=>onAdd(product,size,quantity,customName.trim(),customNumber)}>ADD TO CART</button>
+    <button className="detail-buy-now" disabled={product.stock<1} onClick={()=>onBuyNow(product,size,quantity,customName.trim(),customNumber)}>BUY NOW ↗</button>
+    <p className="account-muted">Custom printing requests will be included with your order details.</p>
   </div>;
 }
