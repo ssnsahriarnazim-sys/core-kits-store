@@ -606,11 +606,11 @@ sizes: (p.sizes || []).join(','),
   const compareProducts = products.filter(p => compareItems.includes(p.id));
 
   return (
-    <div className="app">
+    <div className="app" style={{'--store-bg':storefrontSettings.backgroundColor,'--store-accent':storefrontSettings.accentColor,'--store-text':storefrontSettings.textColor}}>
       <div className="top-announcement">{storefrontSettings.announcement}</div>
       <header className="navbar">
         <button className="header-icon mobile-menu-trigger" onClick={() => setShowMenu(true)} aria-label="Open menu">☰</button>
-        <a className="logo" href="#">CORE<span>KITS</span><i>.</i></a>
+        <a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a>
         <nav className="desktop-links">
           <a href="#">HOME</a><a href="#shop">SHOP ALL</a><a href="#collections">COLLECTIONS</a><a href="#tracking">TRACK ORDER</a>
         </nav>
@@ -713,7 +713,7 @@ sizes: (p.sizes || []).join(','),
       </main>
 
       <footer className="site-footer">
-        <div className="footer-main"><div><a className="logo" href="#">CORE<span>KITS</span><i>.</i></a><p>{storefrontSettings.footerTagline}</p><small>{storefrontSettings.footerDescription}</small></div><div><b>SHOP</b><a href="#shop">All Products</a><a href="#collections">Collections</a><a href="#tracking">Track Order</a></div><div><b>HELP & SUPPORT</b><a href="#tracking">Order Tracking</a><a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">Contact on WhatsApp</a><button onClick={()=>setShowAccount(true)}>My Account</button></div></div>
+        <div className="footer-main"><div><a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a><p>{storefrontSettings.footerTagline}</p><small>{storefrontSettings.footerDescription}</small></div><div><b>SHOP</b><a href="#shop">All Products</a><a href="#collections">Collections</a><a href="#tracking">Track Order</a></div><div><b>HELP & SUPPORT</b><a href="#tracking">Order Tracking</a><a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">Contact on WhatsApp</a><button onClick={()=>setShowAccount(true)}>My Account</button></div></div>
         <div className="footer-bottom"><small>© 2026 CORE KITS. ALL RIGHTS RESERVED.</small><small>BUILT FOR THE LOVE OF THE GAME.</small></div>
       </footer>
 <nav className="floating-nav">
