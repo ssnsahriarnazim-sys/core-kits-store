@@ -1218,3 +1218,11 @@ a{color:inherit}
 .section-order-row button{width:34px;height:32px;border:1px solid #d6cbb8;border-radius:6px;background:#f7f3eb;color:#29251e;font-weight:900;cursor:pointer}
 .section-order-row button:disabled{opacity:.35;cursor:not-allowed}
 .customizer-help{margin:0 0 10px;color:#756d60;font-size:12px;line-height:1.5}
+
+
+/* Live storefront theme controls */
+.app{font-family:var(--store-font,'DM Sans'),sans-serif}
+.app .shop-btn,.app .view-product-button,.app .admin-submit,.app .tracking-box button,.app .filters button.active,.app .collection-heading>a{background:var(--store-accent,#b89a62);border-color:var(--store-accent,#b89a62);color:#171612}
+.app .product:hover,.app .search:focus,.app .product-card-tools button{border-color:var(--store-accent,#b89a62)}
+.app .product-price strong,.app .detail-price,.app .product-category{color:var(--store-accent,#b89a62)}
+.app .top-announcement{background:var(--store-accent,#b89a62)}
