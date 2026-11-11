@@ -54,11 +54,67 @@ export default function App() {
 const [orders, setOrders] = useState([]);
 const [customerOrders, setCustomerOrders] = useState([]);
 const [customerOrdersLoading, setCustomerOrdersLoading] = useState(false);
+const [productReviews, setProductReviews] = useState([]);
+const [reviewRating, setReviewRating] = useState(5);
+const [reviewText, setReviewText] = useState('');
+const [reviewBusy, setReviewBusy] = useState(false);
+const [reviewMessage, setReviewMessage] = useState('');
+
 const [orderLoading, setOrderLoading] = useState(false);
  const [trackingId, setTrackingId] = useState('');
 const [trackingPhone, setTrackingPhone] = useState('');
 const [trackedOrder, setTrackedOrder] = useState(null);
 const [trackingLoading, setTrackingLoading] = useState(false);
+  useEffect(() => {
+    if (!selectedProduct?.id) {
+      setProductReviews([]);
+      setReviewMessage('');
+      return;
+    }
+    loadProductReviews(selectedProduct.id);
+    setReviewText('');
+    setReviewRating(5);
+  }, [selectedProduct?.id]);
+
+  async function loadProductReviews(productId) {
+    const { data, error } = await supabase
+      .from('product_reviews')
+      .select('id, customer_name, rating, review_text, created_at')
+      .eq('product_id', productId)
+      .order('created_at', { ascending: false });
+    if (!error) setProductReviews(data || []);
+  }
+
+  async function submitProductReview(e) {
+    e.preventDefault();
+    if (!customer?.id || !selectedProduct?.id) {
+      setReviewMessage('Please log in to write a review.');
+      return;
+    }
+    if (reviewText.trim().length < 5) {
+      setReviewMessage('Please write at least 5 characters.');
+      return;
+    }
+    setReviewBusy(true);
+    setReviewMessage('');
+    const customerName = customer.user_metadata?.full_name || customer.user_metadata?.name || customer.email?.split('@')[0] || 'Customer';
+    const { error } = await supabase.from('product_reviews').upsert({
+      product_id: selectedProduct.id,
+      customer_id: customer.id,
+      customer_name: customerName,
+      rating: Number(reviewRating),
+      review_text: reviewText.trim()
+    }, { onConflict: 'product_id,customer_id' });
+    if (error) {
+      setReviewMessage(error.code === '42P01' ? 'Reviews database migration is not applied yet.' : error.code === '42501' ? 'Please log in again to submit your review.' : error.message);
+    } else {
+      setReviewMessage('Your review has been saved. Thank you!');
+      setReviewText('');
+      await loadProductReviews(selectedProduct.id);
+    }
+    setReviewBusy(false);
+  }
+
   useEffect(() => {
     if (!customer?.id) {
       setCustomerOrders([]);
@@ -674,6 +730,29 @@ sizes: (p.sizes || []).join(','),
             <p>{selectedProduct.description || 'Premium football kit. Wear your passion.'}</p>
             <div className="detail-price">৳{selectedProduct.price}{selectedProduct.original_price > selectedProduct.price && <del>৳{selectedProduct.original_price}</del>}</div>
             <ProductDetailActions product={selectedProduct} onAdd={addToCart} onBuyNow={buyNow}/>
+            <section className="product-reviews">
+              <div className="reviews-heading">
+                <div><p className="eyebrow">CUSTOMER FEEDBACK</p><h3>Reviews ({productReviews.length})</h3></div>
+                {productReviews.length>0 && <strong>{(productReviews.reduce((sum,r)=>sum+Number(r.rating),0)/productReviews.length).toFixed(1)} / 5 ★</strong>}
+              </div>
+              <form className="review-form" onSubmit={submitProductReview}>
+                <label htmlFor="review-rating">Your rating</label>
+                <select id="review-rating" className="search" value={reviewRating} onChange={e=>setReviewRating(Number(e.target.value))}>
+                  <option value="5">★★★★★ — Excellent</option><option value="4">★★★★☆ — Good</option><option value="3">★★★☆☆ — Average</option><option value="2">★★☆☆☆ — Poor</option><option value="1">★☆☆☆☆ — Very poor</option>
+                </select>
+                <label htmlFor="review-text">Your review</label>
+                <textarea id="review-text" className="search" rows="3" maxLength="1200" placeholder="Share your experience with this product..." value={reviewText} onChange={e=>setReviewText(e.target.value)}/>
+                <button className="account-action" type="submit" disabled={reviewBusy}>{reviewBusy?'SAVING...':customer?'SUBMIT REVIEW':'LOG IN TO REVIEW'}</button>
+                {reviewMessage && <p className="review-message">{reviewMessage}</p>}
+                {!customer && <p className="account-muted">Sign in to your CORE KITS account before submitting a review.</p>}
+              </form>
+              <div className="review-list">
+                {productReviews.length===0 ? <p className="account-muted">No reviews yet. Be the first to share your experience.</p> : productReviews.map(review=><article className="review-item" key={review.id}>
+                  <div><strong>{review.customer_name}</strong><span className="review-stars">{'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)}</span></div>
+                  <p>{review.review_text}</p><time>{new Date(review.created_at).toLocaleDateString()}</time>
+                </article>)}
+              </div>
+            </section>
           </section>
         </div>
       )}
