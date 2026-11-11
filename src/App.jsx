@@ -453,12 +453,13 @@ sizes: (p.sizes || []).join(','),
     setShowCheckout(true);
   }
 
-  function updateCartQuantity(productId, size, quantity) {
+  function updateCartQuantity(productId, size, quantity, customName = '', customNumber = '') {
+    const matches = item => item.product.id === productId && item.size === size && (item.customName || '') === customName && (item.customNumber || '') === customNumber;
     if (quantity < 1) {
-      setCartItems(current => current.filter(item => !(item.product.id === productId && item.size === size)));
+      setCartItems(current => current.filter(item => !matches(item)));
       return;
     }
-    setCartItems(current => current.map(item => item.product.id === productId && item.size === size ? {...item, quantity: Math.min(Number(item.product.stock || 99), quantity)} : item));
+    setCartItems(current => current.map(item => matches(item) ? {...item, quantity: Math.min(Number(item.product.stock || 99), quantity)} : item));
   }
 
   const cartSubtotal = cartItems.reduce((sum,item) => sum + Number(item.product.price || 0) * item.quantity, 0);
@@ -686,10 +687,10 @@ sizes: (p.sizes || []).join(','),
             <button className="account-close" onClick={() => setShowCart(false)}>×</button>
             <p className="eyebrow">YOUR SELECTION</p><h2>Shopping Cart</h2>
             {!cartItems.length ? <p className="account-muted">Your cart is empty.</p> : cartItems.map(item=>(
-              <div className="cart-line" key={item.product.id + item.size}>
+              <div className="cart-line" key={item.product.id + item.size + (item.customName || '') + (item.customNumber || '')}>
                 <div><strong>{item.product.name}</strong><small>Size: {item.size}{item.customName ? ` · Name: ${item.customName}` : ''}{item.customNumber ? ` · No: ${item.customNumber}` : ''} · ৳{item.product.price}</small></div>
-                <input aria-label="Quantity" type="number" min="1" max={item.product.stock} value={item.quantity} onChange={e=>updateCartQuantity(item.product.id,item.size,Number(e.target.value))}/>
-                <button onClick={()=>updateCartQuantity(item.product.id,item.size,0)}>Remove</button>
+                <input aria-label="Quantity" type="number" min="1" max={item.product.stock} value={item.quantity} onChange={e=>updateCartQuantity(item.product.id,item.size,Number(e.target.value),item.customName || '',item.customNumber || '')}/>
+                <button onClick={()=>updateCartQuantity(item.product.id,item.size,0,item.customName || '',item.customNumber || '')}>Remove</button>
               </div>
             ))}
             {cartItems.length>0 && <>
