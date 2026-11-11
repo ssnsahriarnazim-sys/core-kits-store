@@ -975,6 +975,15 @@ sizes: (p.sizes || []).join(','),
                     <label>Facebook page URL</label><input className="search" type="url" placeholder="https://facebook.com/yourpage" value={storefrontSettings.facebookUrl || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,facebookUrl:e.target.value})}/>
                     <label>Instagram profile URL</label><input className="search" type="url" placeholder="https://instagram.com/yourprofile" value={storefrontSettings.instagramUrl || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,instagramUrl:e.target.value})}/>
                     <label>TikTok profile URL</label><input className="search" type="url" placeholder="https://tiktok.com/@yourprofile" value={storefrontSettings.tiktokUrl || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,tiktokUrl:e.target.value})}/>
+                    <h4>Product & Floating Navigation Labels</h4>
+                    <label>Product select button</label><input className="search" value={storefrontSettings.productSelectLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,productSelectLabel:e.target.value})}/>
+                    <label>Product details button</label><input className="search" value={storefrontSettings.productDetailsLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,productDetailsLabel:e.target.value})}/>
+                    <label>Add to cart button</label><input className="search" value={storefrontSettings.addCartLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,addCartLabel:e.target.value})}/>
+                    <label>Buy now button</label><input className="search" value={storefrontSettings.buyNowLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,buyNowLabel:e.target.value})}/>
+                    <label>Floating account label</label><input className="search" value={storefrontSettings.floatingAccountLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,floatingAccountLabel:e.target.value})}/>
+                    <label>Floating cart label</label><input className="search" value={storefrontSettings.floatingCartLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,floatingCartLabel:e.target.value})}/>
+                    <label>Floating shop label</label><input className="search" value={storefrontSettings.floatingShopLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,floatingShopLabel:e.target.value})}/>
+                    <label>Floating menu label</label><input className="search" value={storefrontSettings.floatingMenuLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,floatingMenuLabel:e.target.value})}/>
                     <h4>Typography</h4>
                     <label>Website font</label><select className="search" value={storefrontSettings.fontFamily || 'DM Sans'} onChange={e=>setStorefrontSettings({...storefrontSettings,fontFamily:e.target.value})}><option value="DM Sans">DM Sans — Modern</option><option value="Arial">Arial — Clean</option><option value="Georgia">Georgia — Editorial</option><option value="Oswald">Oswald — Bold</option></select>
                     <h4>Storefront Colors</h4>
@@ -1152,7 +1161,7 @@ function ProductImageGallery({product}) {
   </div>;
 }
 
-function ProductCard({product, onOpen, wished, compared, onWishlist, onCompare}) {
+function ProductCard({product, onOpen, wished, compared, onWishlist, onCompare, settings = {}}) {
   const hasSale = Number(product.original_price) > Number(product.price);
   const discount = hasSale ? Math.round(((Number(product.original_price)-Number(product.price))/Number(product.original_price))*100) : 0;
   return (
@@ -1173,13 +1182,13 @@ function ProductCard({product, onOpen, wished, compared, onWishlist, onCompare})
           <strong>{product.price ? `৳${product.price}` : 'Price on WhatsApp'}</strong>
           {hasSale && <span className="original-price">৳{product.original_price}</span>}
         </div>
-        <button type="button" className="view-product-button" onClick={onOpen}>{product.stock > 0 ? 'SELECT OPTIONS' : 'VIEW DETAILS'} <b>↗</b></button>
+        <button type="button" className="view-product-button" onClick={onOpen}>{product.stock > 0 ? (settings.productSelectLabel || 'SELECT OPTIONS') : (settings.productDetailsLabel || 'VIEW DETAILS')} <b>↗</b></button>
       </div>
     </article>
   );
 }
 
-function ProductDetailActions({product,onAdd,onBuyNow}) {
+function ProductDetailActions({product,onAdd,onBuyNow,settings = {}}) {
   const [size,setSize]=useState(product.sizes?.[0] || '');
   const [sleeve,setSleeve]=useState('Short Sleeve');
   const [quantity,setQuantity]=useState(1);
@@ -1201,8 +1210,8 @@ function ProductDetailActions({product,onAdd,onBuyNow}) {
     <input className="search" inputMode="numeric" maxLength="2" placeholder="e.g. 10" value={customNumber} onChange={e=>setCustomNumber(e.target.value.replace(/\D/g,'').slice(0,2))}/>
     <label>Quantity</label>
     <input className="search" type="number" min="1" max={product.stock || 1} value={quantity} onChange={e=>setQuantity(Math.max(1,Math.min(Number(product.stock)||1,Number(e.target.value)||1)))}/>
-    <button className="account-action" disabled={product.stock<1} onClick={()=>onAdd(product,size,quantity,customName.trim(),customNumber,sleeve)}>ADD TO CART</button>
-    <button className="detail-buy-now" disabled={product.stock<1} onClick={()=>onBuyNow(product,size,quantity,customName.trim(),customNumber,sleeve)}>BUY NOW ↗</button>
+    <button className="account-action" disabled={product.stock<1} onClick={()=>onAdd(product,size,quantity,customName.trim(),customNumber,sleeve)}>{settings.addCartLabel || 'ADD TO CART'}</button>
+    <button className="detail-buy-now" disabled={product.stock<1} onClick={()=>onBuyNow(product,size,quantity,customName.trim(),customNumber,sleeve)}>{settings.buyNowLabel || 'BUY NOW'} ↗</button>
     <p className="account-muted">Custom printing requests will be included with your order details.</p>
   </div>;
 }
