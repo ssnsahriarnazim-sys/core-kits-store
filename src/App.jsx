@@ -13,6 +13,7 @@ export default function App() {
   const [wishlist, setWishlist] = useState([]);
   const [compareItems, setCompareItems] = useState([]);
   const [showCompare, setShowCompare] = useState(false);
+  const [showWishlist, setShowWishlist] = useState(false);
   const [sortBy, setSortBy] = useState('featured');
   const [priceLimit, setPriceLimit] = useState('');
   const [showCart, setShowCart] = useState(false);
@@ -541,6 +542,7 @@ sizes: (p.sizes || []).join(','),
         </nav>
         <div className="header-tools">
           <button className="header-icon" onClick={() => document.getElementById('product-search')?.focus()} aria-label="Search">⌕</button>
+          <button className="header-icon" onClick={() => setShowWishlist(true)} aria-label="Wishlist">♡<small className="header-count">{wishlist.length}</small></button>
           <button className="header-icon" onClick={() => setShowAccount(true)} aria-label="My account">♙</button>
           <button className="header-icon header-cart" onClick={() => setShowCart(true)} aria-label="Shopping cart">♧<small>{cartItems.reduce((n,item)=>n+item.quantity,0)}</small></button>
           <button className="header-icon admin-shortcut" onClick={() => setShowLogin(true)} aria-label="Admin">⚙</button>
@@ -676,6 +678,7 @@ sizes: (p.sizes || []).join(','),
           </section>
         </div>
       )}
+      {showWishlist && <div className="account-overlay" onClick={()=>setShowWishlist(false)}><section className="account-panel wishlist-panel" onClick={e=>e.stopPropagation()}><button className="account-close" onClick={()=>setShowWishlist(false)}>×</button><p className="eyebrow">SAVED FOR LATER</p><h2>My Wishlist</h2>{products.filter(p=>wishlist.includes(p.id)).length ? <div className="wishlist-list">{products.filter(p=>wishlist.includes(p.id)).map(p=><div className="wishlist-item" key={p.id}>{(p.image_urls?.[0]||p.image_url) ? <img src={p.image_urls?.[0]||p.image_url} alt={p.name}/> : <div className="wishlist-placeholder">CK</div>}<div><b>{p.name}</b><strong>৳{p.price||"—"}</strong><button onClick={()=>{setSelectedProduct(p);setShowWishlist(false);}}>VIEW PRODUCT</button></div><button className="wishlist-remove" onClick={()=>toggleWishlist(p)}>×</button></div>)}</div> : <p className="account-muted">Your wishlist is empty. Save products using the heart icon.</p>}</section></div>}
       {showCompare && <div className="account-overlay" onClick={()=>setShowCompare(false)}><section className="account-panel compare-panel" onClick={e=>e.stopPropagation()}><button className="account-close" onClick={()=>setShowCompare(false)}>×</button><p className="eyebrow">SIDE BY SIDE</p><h2>Compare Products</h2><div className="compare-grid">{compareProducts.map(p=><div key={p.id}><div className="compare-image">{p.image_urls?.[0] || p.image_url ? <img src={p.image_urls?.[0] || p.image_url} alt={p.name}/> : 'CORE KITS'}</div><b>{p.name}</b><strong>৳{p.price || '—'}</strong><small>{p.stock>0?'In stock':'Check availability'}</small><button onClick={()=>{setSelectedProduct(p);setShowCompare(false);}}>VIEW PRODUCT</button><button className="compare-remove" onClick={()=>setCompareItems(items=>items.filter(id=>id!==p.id))}>REMOVE</button></div>)}</div></section></div>}
       {showCart && (
         <div className="account-overlay" onClick={() => setShowCart(false)}>
