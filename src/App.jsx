@@ -577,22 +577,6 @@ sizes: (p.sizes || []).join(','),
         </div>
       </header>
 
-      <section className="promo-banner">
-        <div className="promo-copy">
-          <p className="eyebrow">THE FOOTBALL CULTURE · CORE KITS</p>
-          <h1>LIVE THE<br/><span>GAME.</span></h1>
-          <p>Find your colours. Wear your passion. Premium football kits for every supporter.</p>
-          <a href="#shop" className="shop-btn">SHOP THE COLLECTION <b>↗</b></a>
-          <div className="hero-trust"><span>✓ QUALITY FIRST</span><span>✓ EASY ORDERING</span><span>✓ TRACK YOUR ORDER</span></div>
-        </div>
-        <div className="promo-art" aria-hidden="true">
-          <div className="hero-glow"></div>
-          <div className="hero-season">26<span>/</span>27</div>
-          {products.filter(p=>p.is_active && (p.image_urls?.length || p.image_url)).slice(0,3).map((p,i)=><img key={p.id} className={`hero-product hero-product-${i+1}`} src={p.image_urls?.[0] || p.image_url} alt=""/>)}
-          <span className="hero-stamp">MATCH<br/>DAY<br/><b>ENERGY</b></span>
-        </div>
-      </section>
-
       <section className="designer-strip">
         <div className="designer-label">SHOP BY<br/>CATEGORY</div>
         <button className={category === 'All' ? 'selected' : ''} onClick={() => setCategory('All')}>ALL PRODUCTS</button>
