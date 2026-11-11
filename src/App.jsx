@@ -23,6 +23,13 @@ export default function App() {
   const [checkoutAddress, setCheckoutAddress] = useState('');
   const [deliveryArea, setDeliveryArea] = useState('inside');
   const [checkoutBusy, setCheckoutBusy] = useState(false);
+  const [checkoutMessage, setCheckoutMessage] = useState('');
+  const [profileName, setProfileName] = useState('');
+  const [profilePhone, setProfilePhone] = useState('');
+  const [profileAddress, setProfileAddress] = useState('');
+  const [profileDeliveryArea, setProfileDeliveryArea] = useState('inside');
+  const [profileBusy, setProfileBusy] = useState(false);
+  const [profileMessage, setProfileMessage] = useState('');
   const [checkoutResult, setCheckoutResult] = useState('');
   const [admin, setAdmin] = useState(false);
   const isAdminRoute = window.location.pathname === '/admin' || window.location.pathname === '/admin/';
@@ -137,15 +144,21 @@ const [trackingLoading, setTrackingLoading] = useState(false);
     setReviewBusy(true);
     setReviewMessage('');
     const customerName = customer.user_metadata?.full_name || customer.user_metadata?.name || customer.email?.split('@')[0] || 'Customer';
+    const { data: authData } = await supabase.auth.getSession();
+    const activeCustomer = authData.session?.user;
+    if (!activeCustomer?.id) {
+      setCustomer(null); setReviewMessage('Please log in to write a review.'); setReviewBusy(false); return;
+    }
+    setCustomer(activeCustomer);
     const { error } = await supabase.from('product_reviews').upsert({
       product_id: selectedProduct.id,
-      customer_id: customer.id,
+      customer_id: activeCustomer.id,
       customer_name: customerName,
       rating: Number(reviewRating),
       review_text: reviewText.trim()
     }, { onConflict: 'product_id,customer_id' });
     if (error) {
-      setReviewMessage(error.code === '42P01' ? 'Reviews database migration is not applied yet.' : error.code === '42501' ? 'Please log in again to submit your review.' : error.message);
+      setReviewMessage(error.code === '42P01' ? 'Reviews database migration is not applied yet.' : error.code === '42501' ? 'Review database permission is missing. Please contact the store admin.' : error.message);
     } else {
       setReviewMessage('Your review has been saved. Thank you!');
       setReviewText('');
@@ -157,10 +170,39 @@ const [trackingLoading, setTrackingLoading] = useState(false);
   useEffect(() => {
     if (!customer?.id) {
       setCustomerOrders([]);
+      setProfileName(''); setProfilePhone(''); setProfileAddress(''); setProfileDeliveryArea('inside');
       return;
     }
     loadCustomerOrders();
+    loadCustomerProfile();
   }, [customer?.id]);
+
+  async function loadCustomerProfile() {
+    if (!customer?.id) return;
+    const { data, error } = await supabase.from('customer_profiles').select('*').eq('user_id', customer.id).maybeSingle();
+    if (error) { setProfileMessage('Profile could not be loaded: ' + error.message); return; }
+    if (data) {
+      setProfileName(data.full_name || ''); setProfilePhone(data.phone || '');
+      setProfileAddress(data.address || ''); setProfileDeliveryArea(data.delivery_area || 'inside');
+      setCheckoutName(current => current || data.full_name || '');
+      setCheckoutPhone(current => current || data.phone || '');
+      setCheckoutAddress(current => current || data.address || '');
+      setDeliveryArea(data.delivery_area || 'inside');
+    } else if (customer.email) setProfileName(customer.user_metadata?.full_name || customer.email.split('@')[0]);
+  }
+
+  async function saveCustomerProfile(e) {
+    e.preventDefault();
+    if (!customer?.id) return;
+    setProfileBusy(true); setProfileMessage('');
+    const { error } = await supabase.from('customer_profiles').upsert({
+      user_id: customer.id, full_name: profileName.trim(), phone: profilePhone.trim(),
+      address: profileAddress.trim(), delivery_area: profileDeliveryArea, updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+    setProfileMessage(error ? 'Could not save profile: ' + error.message : 'Your details have been saved.');
+    if (!error) { setCheckoutName(profileName.trim()); setCheckoutPhone(profilePhone.trim()); setCheckoutAddress(profileAddress.trim()); setDeliveryArea(profileDeliveryArea); }
+    setProfileBusy(false);
+  }
 
   async function loadCustomerOrders() {
     if (!customer?.id) return;
@@ -364,6 +406,7 @@ if (data) {
     } else if (customerAuthMode === 'signup' && !result.data.session) {
       setMessage('Account created. If email confirmation is enabled, confirm your email before logging in.');
     } else {
+      if (result.data.user) setCustomer(result.data.user);
       setPassword('');
       setMessage(customerAuthMode === 'signup' ? 'Account created successfully!' : 'Login successful!');
     }
@@ -561,54 +604,35 @@ sizes: (p.sizes || []).join(','),
     setCheckoutBusy(true);
     const itemNames = cartItems.map(item => `${item.product.name} (Size: ${item.size}, ${item.sleeve || 'Short Sleeve'}${item.customName ? `, Name: ${item.customName}` : ''}${item.customNumber ? `, Number: ${item.customNumber}` : ''} × ${item.quantity})`).join(' | ');
     const totalQuantity = cartItems.reduce((sum,item) => sum + item.quantity, 0);
-    const {data, error} = await supabase.from('orders').insert({
-      customer_name: checkoutName.trim(),
-      phone: checkoutPhone.trim(),
-      address: checkoutAddress.trim(),
-      delivery_area: deliveryArea,
-      delivery_fee: deliveryFee,
-      subtotal: cartSubtotal,
-      customer_id: customer?.id || null,
-      product_id: cartItems.length === 1 ? cartItems[0].product.id : null,
-      product_name: itemNames,
-      size: cartItems.map(item => item.size).join(', '),
-      quantity: totalQuantity,
-      unit_price: null,
-      total_price: checkoutTotal,
-      status: 'Pending'
-    }).select('id').single();
-    if (error) {
-      setCheckoutBusy(false);
-      setMessage('Order failed: ' + error.message);
-      return;
-    }
+    setCheckoutMessage('');
     const itemPayload = cartItems.map(item => ({
-      order_id: data.id, product_id: item.product.id, product_name: item.product.name,
-      size: [item.size, item.sleeve || 'Short Sleeve', item.customName && `Name: ${item.customName}`, item.customNumber && `No: ${item.customNumber}`].filter(Boolean).join(' / '), quantity: item.quantity, unit_price: Number(item.product.price || 0),
+      product_id: item.product.id, product_name: item.product.name,
+      size: [item.size, item.sleeve || 'Short Sleeve', item.customName && `Name: ${item.customName}`, item.customNumber && `Number: ${item.customNumber}`].filter(Boolean).join(' / '),
+      quantity: item.quantity, unit_price: Number(item.product.price || 0),
       line_total: Number(item.product.price || 0) * item.quantity
     }));
-    const { error: itemsError } = await supabase.from('order_items').insert(itemPayload);
-    if (itemsError) {
-      // Do not report success or clear the cart when item rows were not saved.
-      // Remove the parent order so its cascade also removes any partial item rows.
-      const { error: rollbackError } = await supabase.from('orders').delete().eq('id', data.id);
+    const { data: orderId, error } = await supabase.rpc('place_customer_order', {
+      p_customer_name: checkoutName.trim(), p_phone: checkoutPhone.trim(), p_address: checkoutAddress.trim(),
+      p_delivery_area: deliveryArea, p_delivery_fee: deliveryFee, p_subtotal: cartSubtotal,
+      p_customer_id: customer?.id || null, p_product_id: cartItems.length === 1 ? cartItems[0].product.id : null,
+      p_product_name: itemNames, p_size: cartItems.map(item => item.size).join(', '),
+      p_quantity: totalQuantity, p_total_price: checkoutTotal, p_items: itemPayload
+    });
+    if (error || !orderId) {
       setCheckoutBusy(false);
-      if (rollbackError) {
-        setMessage('Order details could not be saved. Order reference ' + data.id + '. Please contact support before retrying. ' + itemsError.message);
-      } else {
-        setMessage('Order was not completed because item details could not be saved. Your cart is unchanged. Please try again. ' + itemsError.message);
-      }
+      setCheckoutMessage('Order could not be confirmed: ' + (error?.message || 'No order ID returned') + '. Your cart is still saved. Please try again.');
       return;
     }
     setCheckoutBusy(false);
-    setCheckoutResult(data.id);
+    setCheckoutMessage('');
+    setCheckoutResult(orderId);
     setCartItems([]);
     setShowCheckout(false);
     setShowCart(false);
     setCheckoutName('');
     setCheckoutPhone('');
     setCheckoutAddress('');
-    if (customer?.id) await loadCustomerOrders();
+    if (customer?.id) { await loadCustomerOrders(); await loadCustomerProfile(); }
   }
 
   const choiceProducts = storefrontSettings.choiceProductIds?.length
@@ -788,6 +812,7 @@ sizes: (p.sizes || []).join(','),
           <section className="account-panel checkout-panel" onClick={e => e.stopPropagation()}>
             <button className="account-close" onClick={() => setShowCheckout(false)}>×</button>
             <p className="eyebrow">SECURE ORDER</p><h2>Complete Your Order</h2>
+            {checkoutMessage && <p className="checkout-error" role="alert">{checkoutMessage}</p>}
             <form onSubmit={placeCheckoutOrder}>
               <input className="search" placeholder="Your full name" value={checkoutName} onChange={e=>setCheckoutName(e.target.value)} required/>
               <input className="search" placeholder="Phone number" value={checkoutPhone} onChange={e=>setCheckoutPhone(e.target.value)} required/>
@@ -822,7 +847,19 @@ sizes: (p.sizes || []).join(','),
             {customer ? (
               <>
                 <p className="account-muted">You are signed in as</p>
-                <strong className="account-email">{customer.email || 'Google account'}</strong>
+                <strong className="account-email">{customer.email || 'Account email unavailable'}</strong>
+                <section className="customer-profile-settings">
+                  <h3>My Customer Details</h3>
+                  <p className="account-muted">Save your name, phone and delivery address for faster future orders.</p>
+                  <form onSubmit={saveCustomerProfile}>
+                    <label>Full name</label><input className="search" value={profileName} onChange={e=>setProfileName(e.target.value)} required />
+                    <label>Phone number</label><input className="search" value={profilePhone} onChange={e=>setProfilePhone(e.target.value)} required />
+                    <label>Saved delivery address</label><textarea className="search" rows="3" value={profileAddress} onChange={e=>setProfileAddress(e.target.value)} required />
+                    <label>Delivery area</label><select className="search" value={profileDeliveryArea} onChange={e=>setProfileDeliveryArea(e.target.value)}><option value="inside">Inside Noakhali — ৳70</option><option value="outside">Outside Noakhali — ৳130</option></select>
+                    <button className="account-action" disabled={profileBusy}>{profileBusy ? 'SAVING DETAILS...' : 'SAVE MY DETAILS'}</button>
+                    {profileMessage && <p className="profile-message" role="status">{profileMessage}</p>}
+                  </form>
+                </section>
                 {storefrontSettings.trackingEnabled !== false && <a className="account-link" href="#tracking" onClick={e => {e.preventDefault();setShowAccount(false);setShowTracking(true);}}>Track an order →</a>}
                 <div className="customer-order-history">
                   <h3>My Order History</h3>
@@ -1233,7 +1270,11 @@ function ProductDetailActions({product,onAdd,onBuyNow,settings = {}}) {
     <label>Custom number (optional)</label>
     <input className="search" inputMode="numeric" maxLength="2" placeholder="e.g. 10" value={customNumber} onChange={e=>setCustomNumber(e.target.value.replace(/\D/g,'').slice(0,2))}/>
     <label>Quantity</label>
-    <input className="search" type="number" min="1" max={product.stock || 1} value={quantity} onChange={e=>setQuantity(Math.max(1,Math.min(Number(product.stock)||1,Number(e.target.value)||1)))}/>
+    <div className="quantity-stepper" aria-label="Select quantity">
+      <button type="button" aria-label="Decrease quantity" disabled={quantity <= 1} onClick={()=>setQuantity(q=>Math.max(1,q-1))}>−</button>
+      <output aria-live="polite">{quantity}</output>
+      <button type="button" aria-label="Increase quantity" disabled={quantity >= Math.max(1,Number(product.stock)||1)} onClick={()=>setQuantity(q=>Math.min(Math.max(1,Number(product.stock)||1),q+1))}>+</button>
+    </div>
     <button className="account-action" disabled={product.stock<1} onClick={()=>onAdd(product,size,quantity,customName.trim(),customNumber,sleeve)}>{settings.addCartLabel || 'ADD TO CART'}</button>
     <button className="detail-buy-now" disabled={product.stock<1} onClick={()=>onBuyNow(product,size,quantity,customName.trim(),customNumber,sleeve)}>{settings.buyNowLabel || 'BUY NOW'} ↗</button>
     <p className="account-muted">Custom printing requests will be included with your order details.</p>
