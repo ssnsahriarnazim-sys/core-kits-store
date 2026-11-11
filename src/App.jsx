@@ -71,7 +71,7 @@ const [trackingLoading, setTrackingLoading] = useState(false);
     categoryStripTitle: 'SHOP BY CATEGORY', allProductsLabel: 'ALL PRODUCTS',
     shopEyebrow: 'THE CORE KITS STORE', shopTitle: 'Explore All Products', shopDescription: 'Choose your team. Find your fit. Get match-day ready.', searchPlaceholder: 'Search your favourite team...',
     trackingEyebrow: 'ORDER TRACKING', trackingTitle: 'Track Your Order.', trackingDescription: 'Enter your Order ID and phone number to check your order status.', trackingButton: 'TRACK ORDER',
-    collectionTileCta: 'SHOP COLLECTION', footerShopHeading: 'SHOP', footerHelpHeading: 'HELP & SUPPORT', footerContactLabel: 'Contact on WhatsApp', footerAccountLabel: 'My Account', copyrightText: '© 2026 CORE KITS. ALL RIGHTS RESERVED.', footerBottomText: 'BUILT FOR THE LOVE OF THE GAME.', facebookUrl: '', instagramUrl: '', tiktokUrl: '',
+    collectionTileCta: 'SHOP COLLECTION', footerShopHeading: 'SHOP', footerHelpHeading: 'HELP & SUPPORT', footerContactLabel: 'Contact on WhatsApp', footerAccountLabel: 'My Account', copyrightText: '© 2026 CORE KITS. ALL RIGHTS RESERVED.', footerBottomText: 'BUILT FOR THE LOVE OF THE GAME.', facebookUrl: '', instagramUrl: '', tiktokUrl: '', productSelectLabel: 'SELECT OPTIONS', productDetailsLabel: 'VIEW DETAILS', addCartLabel: 'ADD TO CART', buyNowLabel: 'BUY NOW', floatingAccountLabel: 'MY ACCOUNT', floatingCartLabel: 'CART', floatingShopLabel: 'SHOP', floatingMenuLabel: 'MENU',
     choiceEyebrow: 'FAN FAVOURITES', choiceTitle: 'Customer Choice', choiceEnabled: true, choiceProductIds: [], choiceLimit: 4,
     recommendedEnabled: true, recommendedEyebrow: 'HANDPICKED FOR YOU', recommendedTitle: 'Recommended Collection', recommendedCategoryId: 'all', recommendedLimit: 4,
     collectionsEnabled: true, collectionsEyebrow: 'FIND YOUR STYLE', collectionsTitle: 'Explore Collections', trackingEnabled: true,
@@ -638,11 +638,11 @@ sizes: (p.sizes || []).join(','),
 
       {storefrontSettings.choiceEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('choice') ?? 1}} className="featured-section">
         <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.choiceEyebrow}</p><h2>{storefrontSettings.choiceTitle}</h2></div><a href="#shop">VIEW ALL <b>↗</b></a></div>
-        <div className="products featured-products">{choiceProducts.map(p => <ProductCard key={'featured-' + p.id} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)}/>)}</div>
+        <div className="products featured-products">{choiceProducts.map(p => <ProductCard key={'featured-' + p.id} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)} settings={storefrontSettings}/>)}</div>
       </section>}
       {storefrontSettings.recommendedEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('recommended') ?? 2}} className="featured-section recommended-section">
         <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.recommendedEyebrow}</p><h2>{storefrontSettings.recommendedTitle}</h2></div><a href="#shop">SHOP ALL <b>↗</b></a></div>
-        <div className="products featured-products">{recommendedProducts.map(p => <ProductCard key={'recommended-' + p.id} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)}/>)}</div>
+        <div className="products featured-products">{recommendedProducts.map(p => <ProductCard key={'recommended-' + p.id} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)} settings={storefrontSettings}/>)}</div>
       </section>}
 
       {storefrontSettings.collectionsEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('collections') ?? 3}} id="collections" className="collection-section">
@@ -709,7 +709,7 @@ sizes: (p.sizes || []).join(','),
           {categories.map(c => <button key={c.id} className={category === c.id ? 'active' : ''} onClick={() => setCategory(c.id)}>{c.name}</button>)}
         </div>
         <div className="products">
-          {filtered.map((p, index) => <ProductCard key={`${p.id}-shop-${index}`} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)}/>)}
+          {filtered.map((p, index) => <ProductCard key={`${p.id}-shop-${index}`} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)} settings={storefrontSettings}/>)}
         </div>
 
         {filtered.length === 0 && (
@@ -726,10 +726,10 @@ sizes: (p.sizes || []).join(','),
         <div className="footer-bottom"><small>{storefrontSettings.copyrightText || '© 2026 CORE KITS. ALL RIGHTS RESERVED.'}</small><small>{storefrontSettings.footerBottomText || 'BUILT FOR THE LOVE OF THE GAME.'}</small></div>
       </footer>
 <nav className="floating-nav">
-  <button type="button" onClick={() => setShowAccount(true)}>♙<span>MY ACCOUNT</span></button>
-  <button type="button" onClick={() => setShowCart(true)}>🛒<span>CART {cartItems.reduce((n,item)=>n+item.quantity,0) || ''}</span></button>
-  <a href="#shop">⚽<span>SHOP</span></a>
-  <button type="button" onClick={() => setShowMenu(true)}>☰<span>MENU</span></button>
+  <button type="button" onClick={() => setShowAccount(true)}>♙<span>{storefrontSettings.floatingAccountLabel || 'MY ACCOUNT'}</span></button>
+  <button type="button" onClick={() => setShowCart(true)}>🛒<span>{storefrontSettings.floatingCartLabel || 'CART'} {cartItems.reduce((n,item)=>n+item.quantity,0) || ''}</span></button>
+  <a href="#shop">⚽<span>{storefrontSettings.floatingShopLabel || 'SHOP'}</span></a>
+  <button type="button" onClick={() => setShowMenu(true)}>☰<span>{storefrontSettings.floatingMenuLabel || 'MENU'}</span></button>
 </nav>
       {compareProducts.length > 0 && <div className="compare-dock"><span><b>{compareProducts.length}/3</b> products selected to compare</span><button onClick={()=>setShowCompare(true)}>COMPARE NOW</button><button className="compare-clear" onClick={()=>setCompareItems([])}>CLEAR</button></div>}
       {selectedProduct && (
@@ -741,7 +741,7 @@ sizes: (p.sizes || []).join(','),
             <h2>{selectedProduct.name}</h2>
             <p>{selectedProduct.description || 'Premium football kit. Wear your passion.'}</p>
             <div className="detail-price">৳{selectedProduct.price}{selectedProduct.original_price > selectedProduct.price && <del>৳{selectedProduct.original_price}</del>}</div>
-            <ProductDetailActions product={selectedProduct} onAdd={addToCart} onBuyNow={buyNow}/>
+            <ProductDetailActions product={selectedProduct} onAdd={addToCart} onBuyNow={buyNow} settings={storefrontSettings}/>
             <section className="product-reviews">
               <div className="reviews-heading">
                 <div><p className="eyebrow">CUSTOMER FEEDBACK</p><h3>Reviews ({productReviews.length})</h3></div>
