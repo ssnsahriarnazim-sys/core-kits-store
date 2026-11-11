@@ -1696,3 +1696,48 @@ a{color:inherit}
 .app .product-detail-tools button:hover{
   background:color-mix(in srgb,var(--store-accent,#b89a62) 17%,transparent)!important;
 }
+
+/* CORE KITS customer account readability and quantity controls */
+.app .account-panel .account-email{
+  display:block!important;
+  color:var(--store-text,#171717)!important;
+  -webkit-text-fill-color:var(--store-text,#171717)!important;
+  opacity:1!important;visibility:visible!important;
+  overflow-wrap:anywhere!important;
+  font-weight:800!important;
+}
+.app .quantity-stepper{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  width:100%!important;min-height:48px!important;
+  border:1px solid color-mix(in srgb,var(--store-text,#171717) 28%,transparent)!important;
+  border-radius:10px!important;overflow:hidden!important;
+  background:var(--store-bg,#f7f5f0)!important;
+}
+.app .quantity-stepper button{
+  display:grid!important;place-items:center!important;
+  width:56px!important;min-width:56px!important;height:48px!important;
+  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  background:var(--store-accent,#b89a62)!important;color:#171612!important;
+  font-size:25px!important;font-weight:900!important;
+}
+.app .quantity-stepper output{
+  flex:1!important;text-align:center!important;
+  color:var(--store-text,#171717)!important;
+  font-size:18px!important;font-weight:900!important;
+}
+.app .quantity-stepper button:disabled{opacity:.35!important}
+.app .customer-profile-settings{
+  margin:18px 0;padding:16px;
+  border:1px solid color-mix(in srgb,var(--store-text,#171717) 18%,transparent);
+  border-radius:10px;
+  background:color-mix(in srgb,var(--store-bg,#f7f5f0) 94%,var(--store-accent,#b89a62));
+}
+.app .customer-profile-settings h3{margin:0 0 8px;color:var(--store-text,#171717)!important}
+.app .customer-profile-settings form{display:grid;gap:9px;margin-top:12px}
+.app .customer-profile-settings label{color:var(--store-text,#171717)!important;font-size:12px;font-weight:800}
+.app .profile-message,.app .checkout-error{
+  padding:10px 12px;border-radius:8px;
+  color:var(--store-text,#171717)!important;
+  background:color-mix(in srgb,var(--store-accent,#b89a62) 18%,var(--store-bg,#f7f5f0));
+  overflow-wrap:anywhere;
+}
