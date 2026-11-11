@@ -10,6 +10,11 @@ export default function App() {
   const [category, setCategory] = useState('All');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cartItems, setCartItems] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [compareItems, setCompareItems] = useState([]);
+  const [showCompare, setShowCompare] = useState(false);
+  const [sortBy, setSortBy] = useState('featured');
+  const [priceLimit, setPriceLimit] = useState('');
   const [showCart, setShowCart] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [checkoutName, setCheckoutName] = useState('');
@@ -506,50 +511,75 @@ sizes: (p.sizes || []).join(','),
   const filtered = products.filter(p =>
     p.is_active &&
     p.name.toLowerCase().includes(search.toLowerCase()) &&
-    (category === 'All' || p.category_id === category)
-  );
+    (category === 'All' || p.category_id === category) &&
+    (!priceLimit || Number(p.price || 0) <= Number(priceLimit))
+  ).sort((a,b) => {
+    if (sortBy === 'price-low') return Number(a.price || 0) - Number(b.price || 0);
+    if (sortBy === 'price-high') return Number(b.price || 0) - Number(a.price || 0);
+    if (sortBy === 'name') return a.name.localeCompare(b.name);
+    return 0;
+  });
+
+  function toggleWishlist(product) {
+    setWishlist(current => current.includes(product.id) ? current.filter(id => id !== product.id) : [...current, product.id]);
+  }
+  function toggleCompare(product) {
+    setCompareItems(current => current.includes(product.id)
+      ? current.filter(id => id !== product.id)
+      : current.length >= 3 ? current : [...current, product.id]);
+  }
+  const compareProducts = products.filter(p => compareItems.includes(p.id));
 
   return (
     <div className="app">
+      <div className="top-announcement">FREE DELIVERY UPDATES · PREMIUM FOOTBALL KITS · MADE FOR FANS</div>
       <header className="navbar">
-        <button className="header-icon" onClick={() => document.getElementById('product-search')?.focus()} aria-label="Search">⌕</button>
-        <a className="logo" href="#">CORE<span>KITS.</span></a>
-        <button className="header-icon" onClick={() => setShowLogin(true)} aria-label="Admin login">♙</button>
+        <button className="header-icon mobile-menu-trigger" onClick={() => setShowMenu(true)} aria-label="Open menu">☰</button>
+        <a className="logo" href="#">CORE<span>KITS</span><i>.</i></a>
+        <nav className="desktop-links">
+          <a href="#">HOME</a><a href="#shop">SHOP ALL</a><a href="#collections">COLLECTIONS</a><a href="#tracking">TRACK ORDER</a>
+        </nav>
+        <div className="header-tools">
+          <button className="header-icon" onClick={() => document.getElementById('product-search')?.focus()} aria-label="Search">⌕</button>
+          <button className="header-icon" onClick={() => setShowAccount(true)} aria-label="My account">♙</button>
+          <button className="header-icon header-cart" onClick={() => setShowCart(true)} aria-label="Shopping cart">♧<small>{cartItems.reduce((n,item)=>n+item.quantity,0)}</small></button>
+          <button className="header-icon admin-shortcut" onClick={() => setShowLogin(true)} aria-label="Admin">⚙</button>
+        </div>
       </header>
 
       <section className="promo-banner">
         <div className="promo-copy">
-          <p className="eyebrow">THE NEW SEASON IS HERE</p>
-          <h1>WEAR YOUR<br/><span>COLOURS.</span></h1>
-          <p>Premium football kits. Built for true fans.</p>
-          <a href="#shop" className="shop-btn">SHOP COLLECTION ↗</a>
-          <div className="promo-code"><small>USE CODE</small><strong>COREKITS150</strong><small>FOR YOUR NEXT ORDER</small></div>
+          <p className="eyebrow">THE FOOTBALL CULTURE · CORE KITS</p>
+          <h1>LIVE THE<br/><span>GAME.</span></h1>
+          <p>Find your colours. Wear your passion. Premium football kits for every supporter.</p>
+          <a href="#shop" className="shop-btn">SHOP THE COLLECTION <b>↗</b></a>
+          <div className="hero-trust"><span>✓ QUALITY FIRST</span><span>✓ EASY ORDERING</span><span>✓ TRACK YOUR ORDER</span></div>
         </div>
         <div className="promo-art" aria-hidden="true">
-          <div className="promo-orbit"></div>
-          <div className="promo-kit-mark"><span>26</span><strong>/</strong><span>27</span></div>
-          <div className="promo-ball">⚽</div>
-          <div className="promo-side-label">MATCH<br/>DAY<br/><b>COLLECTION</b></div>
+          <div className="hero-glow"></div>
+          <div className="hero-season">26<span>/</span>27</div>
+          {products.filter(p=>p.is_active && (p.image_urls?.length || p.image_url)).slice(0,3).map((p,i)=><img key={p.id} className={`hero-product hero-product-${i+1}`} src={p.image_urls?.[0] || p.image_url} alt=""/>)}
+          <span className="hero-stamp">MATCH<br/>DAY<br/><b>ENERGY</b></span>
         </div>
       </section>
 
       <section className="designer-strip">
-        <div className="designer-label">DESIGNER<br/>CHOICE</div>
-        <button className={category === 'All' ? 'selected' : ''} onClick={() => setCategory('All')}>ALL KITS</button>
-        {categories.slice(0,5).map(c => <button key={c.id} className={category === c.id ? 'selected' : ''} onClick={() => setCategory(c.id)}>{c.name}</button>)}
+        <div className="designer-label">SHOP BY<br/>CATEGORY</div>
+        <button className={category === 'All' ? 'selected' : ''} onClick={() => setCategory('All')}>ALL PRODUCTS</button>
+        {categories.slice(0,7).map(c => <button key={c.id} className={category === c.id ? 'selected' : ''} onClick={() => {setCategory(c.id);document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}>{c.name}</button>)}
       </section>
 
       <section className="featured-section">
-        <div className="collection-heading"><h2><span>Customer</span> Choice</h2><a href="#shop">More　›</a></div>
+        <div className="collection-heading"><div><p className="eyebrow">FAN FAVOURITES</p><h2>Customer <span>Choice</span></h2></div><a href="#shop">VIEW ALL <b>↗</b></a></div>
         <div className="products featured-products">
-          {filtered.slice(0,4).map(p => <ProductCard key={`featured-${p.id}`} product={p} onOpen={() => setSelectedProduct(p)}/>)}
+          {filtered.slice(0,4).map(p => <ProductCard key={`featured-${p.id}`} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)}/>)}
         </div>
       </section>
 
-      <section className="collection-section">
-        <div className="collection-heading"><h2><span>Recommend</span> Collections</h2><a href="#shop">More　›</a></div>
+      <section id="collections" className="collection-section">
+        <div className="collection-heading"><div><p className="eyebrow">FIND YOUR STYLE</p><h2>Explore <span>Collections</span></h2></div><a href="#shop">ALL PRODUCTS <b>↗</b></a></div>
         <div className="collection-tiles">
-          {categories.slice(0,4).map((c,i) => <button key={c.id} onClick={() => {setCategory(c.id); document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}><span>0{i+1}</span><strong>{c.name}</strong><small>EXPLORE COLLECTION ↗</small></button>)}
+          {categories.slice(0,4).map((c,i) => <button key={c.id} onClick={() => {setCategory(c.id); document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}><span>0{i+1}</span><strong>{c.name}</strong><small>SHOP COLLECTION ↗</small></button>)}
         </div>
       </section>
 <section id="tracking" className="tracking-section">
@@ -593,40 +623,24 @@ sizes: (p.sizes || []).join(','),
 </section>
       <main id="shop" className="shop">
         <div className="section-heading">
-          <div>
-            <p className="eyebrow">EXPLORE ALL</p>
-            <h2>Find Your Kit.</h2>
-          </div>
+          <div><p className="eyebrow">THE CORE KITS STORE</p><h2>Explore <span>All Products</span></h2><p className="shop-intro">Choose your team. Find your fit. Get match-day ready.</p></div>
           <span>{filtered.length} PRODUCTS</span>
         </div>
-
-        <input
-          id="product-search"
-          className="search"
-          placeholder="Search your favourite team..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-
-        <div className="filters">
-          <button
-            className={category === 'All' ? 'active' : ''}
-            onClick={() => setCategory('All')}
-          >All</button>
-
-          {categories.map(c => (
-            <button
-              key={c.id}
-              className={category === c.id ? 'active' : ''}
-              onClick={() => setCategory(c.id)}
-            >{c.name}</button>
-          ))}
+        <div className="shop-toolbar">
+          <input id="product-search" className="search" placeholder="Search your favourite team..." value={search} onChange={e => setSearch(e.target.value)}/>
+          <select className="shop-sort" value={sortBy} onChange={e=>setSortBy(e.target.value)} aria-label="Sort products">
+            <option value="featured">Sort: Featured</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option><option value="name">Name: A to Z</option>
+          </select>
+          <select className="shop-sort" value={priceLimit} onChange={e=>setPriceLimit(e.target.value)} aria-label="Filter by maximum price">
+            <option value="">Any price</option><option value="500">Under ৳500</option><option value="1000">Under ৳1,000</option><option value="1500">Under ৳1,500</option><option value="2000">Under ৳2,000</option>
+          </select>
         </div>
-
+        <div className="filters">
+          <button className={category === 'All' ? 'active' : ''} onClick={() => setCategory('All')}>All products</button>
+          {categories.map(c => <button key={c.id} className={category === c.id ? 'active' : ''} onClick={() => setCategory(c.id)}>{c.name}</button>)}
+        </div>
         <div className="products">
-          {filtered.map((p, index) => (
-            <ProductCard key={`${p.id}-shop-${index}`} product={p} onOpen={() => setSelectedProduct(p)}/>
-          ))}
+          {filtered.map((p, index) => <ProductCard key={`${p.id}-shop-${index}`} product={p} onOpen={() => setSelectedProduct(p)} wished={wishlist.includes(p.id)} compared={compareItems.includes(p.id)} onWishlist={()=>toggleWishlist(p)} onCompare={()=>toggleCompare(p)}/>)}
         </div>
 
         {filtered.length === 0 && (
@@ -636,10 +650,9 @@ sizes: (p.sizes || []).join(','),
         )}
       </main>
 
-      <footer>
-        <a className="logo" href="#">CORE<span>KITS.</span></a>
-        <p>WEAR THE DIFFERENCE.</p>
-        <small>© 2026 CORE KITS. ALL RIGHTS RESERVED.</small>
+      <footer className="site-footer">
+        <div className="footer-main"><div><a className="logo" href="#">CORE<span>KITS</span><i>.</i></a><p>WEAR YOUR PASSION.</p><small>Football culture, premium kits and match-day essentials for every fan.</small></div><div><b>SHOP</b><a href="#shop">All Products</a><a href="#collections">Collections</a><a href="#tracking">Track Order</a></div><div><b>HELP & SUPPORT</b><a href="#tracking">Order Tracking</a><a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">Contact on WhatsApp</a><button onClick={()=>setShowAccount(true)}>My Account</button></div></div>
+        <div className="footer-bottom"><small>© 2026 CORE KITS. ALL RIGHTS RESERVED.</small><small>BUILT FOR THE LOVE OF THE GAME.</small></div>
       </footer>
 <nav className="floating-nav">
   <button type="button" onClick={() => setShowAccount(true)}>♙<span>MY ACCOUNT</span></button>
@@ -647,6 +660,7 @@ sizes: (p.sizes || []).join(','),
   <a href="#shop">⚽<span>SHOP</span></a>
   <button type="button" onClick={() => setShowMenu(true)}>☰<span>MENU</span></button>
 </nav>
+      {compareProducts.length > 0 && <div className="compare-dock"><span><b>{compareProducts.length}/3</b> products selected to compare</span><button onClick={()=>setShowCompare(true)}>COMPARE NOW</button><button className="compare-clear" onClick={()=>setCompareItems([])}>CLEAR</button></div>}
       {selectedProduct && (
         <div className="account-overlay product-overlay" onClick={() => setSelectedProduct(null)}>
           <section className="account-panel product-detail-panel" onClick={e => e.stopPropagation()}>
@@ -662,6 +676,7 @@ sizes: (p.sizes || []).join(','),
           </section>
         </div>
       )}
+      {showCompare && <div className="account-overlay" onClick={()=>setShowCompare(false)}><section className="account-panel compare-panel" onClick={e=>e.stopPropagation()}><button className="account-close" onClick={()=>setShowCompare(false)}>×</button><p className="eyebrow">SIDE BY SIDE</p><h2>Compare Products</h2><div className="compare-grid">{compareProducts.map(p=><div key={p.id}><div className="compare-image">{p.image_urls?.[0] || p.image_url ? <img src={p.image_urls?.[0] || p.image_url} alt={p.name}/> : 'CORE KITS'}</div><b>{p.name}</b><strong>৳{p.price || '—'}</strong><small>{p.stock>0?'In stock':'Check availability'}</small><button onClick={()=>{setSelectedProduct(p);setShowCompare(false);}}>VIEW PRODUCT</button><button className="compare-remove" onClick={()=>setCompareItems(items=>items.filter(id=>id!==p.id))}>REMOVE</button></div>)}</div></section></div>}
       {showCart && (
         <div className="account-overlay" onClick={() => setShowCart(false)}>
           <section className="account-panel cart-panel" onClick={e => e.stopPropagation()}>
@@ -972,21 +987,28 @@ sizes: (p.sizes || []).join(','),
   );
 }
 
-function ProductCard({product, onOpen}) {
+function ProductCard({product, onOpen, wished, compared, onWishlist, onCompare}) {
+  const hasSale = Number(product.original_price) > Number(product.price);
+  const discount = hasSale ? Math.round(((Number(product.original_price)-Number(product.price))/Number(product.original_price))*100) : 0;
   return (
-    <article className="product product-clickable" onClick={onOpen} role="button" tabIndex={0} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOpen();}}}>
-      <div className="product-image">
+    <article className="product product-clickable">
+      <div className="product-image" onClick={onOpen}>
         {product.image_urls?.length ? <img src={product.image_urls[0]} alt={product.name}/> : product.image_url ? <img src={product.image_url} alt={product.name}/> : <span>CORE KITS.</span>}
+        {hasSale && <span className="product-sale">-{discount}%</span>}
+        <div className="product-card-tools">
+          <button type="button" className={wished?'is-active':''} aria-label="Add to wishlist" title="Wishlist" onClick={onWishlist}>{wished?'♥':'♡'}</button>
+          <button type="button" className={compared?'is-active':''} aria-label="Compare product" title="Compare" onClick={onCompare}>⇄</button>
+          <button type="button" aria-label="Quick view" title="Quick view" onClick={onOpen}>⌕</button>
+        </div>
       </div>
       <div className="product-info">
-        <h3>{product.name}</h3>
-        <p>{product.stock > 0 ? `IN STOCK · ${product.stock} AVAILABLE` : 'CHECK AVAILABILITY'}</p>
+        <div className="product-category">{product.stock > 0 ? 'READY TO SHIP' : 'CHECK AVAILABILITY'}</div>
+        <h3 onClick={onOpen}>{product.name}</h3>
         <div className="product-price">
-          {product.original_price > product.price && <span className="original-price">৳{product.original_price}</span>}
           <strong>{product.price ? `৳${product.price}` : 'Price on WhatsApp'}</strong>
-          {product.original_price > product.price && <span className="discount-badge">{Math.round(((product.original_price-product.price)/product.original_price)*100)}% OFF</span>}
+          {hasSale && <span className="original-price">৳{product.original_price}</span>}
         </div>
-        <button type="button" className="view-product-button" onClick={e=>{e.stopPropagation();onOpen();}}>VIEW DETAILS ↗</button>
+        <button type="button" className="view-product-button" onClick={onOpen}>{product.stock > 0 ? 'SELECT OPTIONS' : 'VIEW DETAILS'} <b>↗</b></button>
       </div>
     </article>
   );
