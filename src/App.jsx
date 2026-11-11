@@ -65,7 +65,7 @@ const [trackingPhone, setTrackingPhone] = useState('');
 const [trackedOrder, setTrackedOrder] = useState(null);
 const [trackingLoading, setTrackingLoading] = useState(false);
   const defaultStorefrontSettings = {
-    announcement: 'FREE DELIVERY UPDATES · PREMIUM FOOTBALL KITS · MADE FOR FANS', bannerUrl: '', logoText: 'CORE KITS',
+    announcement: 'FREE DELIVERY UPDATES · PREMIUM FOOTBALL KITS · MADE FOR FANS', showAnnouncement: true, bannerUrl: '', showCustomBanner: true, showCategoryStrip: true, logoText: 'CORE KITS',
     navHome: 'HOME', navShop: 'SHOP ALL', navCollections: 'COLLECTIONS', navTracking: 'TRACK ORDER',
     sectionOrder: ['choice','recommended','collections','tracking','shop'],
     categoryStripTitle: 'SHOP BY CATEGORY', allProductsLabel: 'ALL PRODUCTS', categoryStripLimit: 7, collectionTileLimit: 4,
@@ -613,7 +613,7 @@ sizes: (p.sizes || []).join(','),
 
   return (
     <div className="app" style={{'--store-bg':storefrontSettings.backgroundColor,'--store-accent':storefrontSettings.accentColor,'--store-text':storefrontSettings.textColor,'--store-font':storefrontSettings.fontFamily || 'DM Sans','--product-cols':storefrontSettings.productColumns || 4,'--product-image-ratio':storefrontSettings.productImageRatio || '4 / 4.5','--product-image-fit':storefrontSettings.productImageFit || 'cover','--product-card-radius':(storefrontSettings.productCardRadius ?? 10)+'px'}}>
-      <div className="top-announcement">{storefrontSettings.announcement}</div>
+      {storefrontSettings.showAnnouncement !== false && <div className="top-announcement">{storefrontSettings.announcement}</div>}
       <header className="navbar">
         <button className="header-icon mobile-menu-trigger" onClick={() => setShowMenu(true)} aria-label="Open menu">☰</button>
         <a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a>
@@ -628,13 +628,13 @@ sizes: (p.sizes || []).join(','),
         </div>
       </header>
 
-      {storefrontSettings.bannerUrl && <section className="custom-store-banner"><img src={storefrontSettings.bannerUrl} alt="CORE KITS custom banner"/></section>}
+      {storefrontSettings.showCustomBanner !== false && storefrontSettings.bannerUrl && <section className="custom-store-banner"><img src={storefrontSettings.bannerUrl} alt="CORE KITS custom banner"/></section>}
       <div className="homepage-sections">
-      <section style={{order:-1}} className="designer-strip">
+      {storefrontSettings.showCategoryStrip !== false && <section style={{order:-1}} className="designer-strip">
         <div className="designer-label">{storefrontSettings.categoryStripTitle || 'SHOP BY CATEGORY'}</div>
         <button className={category === 'All' ? 'selected' : ''} onClick={() => setCategory('All')}>{storefrontSettings.allProductsLabel || 'ALL PRODUCTS'}</button>
         {categories.slice(0, Number(storefrontSettings.categoryStripLimit) || 7).map(c => <button key={c.id} className={category === c.id ? 'selected' : ''} onClick={() => {setCategory(c.id);document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}>{c.name}</button>)}
-      </section>
+      </section>}
 
       {storefrontSettings.choiceEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('choice') ?? 1}} className="featured-section">
         <div className="collection-heading"><div><p className="eyebrow">{storefrontSettings.choiceEyebrow}</p><h2>{storefrontSettings.choiceTitle}</h2></div><a href="#shop">VIEW ALL <b>↗</b></a></div>
@@ -925,6 +925,10 @@ sizes: (p.sizes || []).join(','),
                     <label>Shop menu label</label><input className="search" value={storefrontSettings.navShop || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,navShop:e.target.value})}/>
                     <label>Collections menu label</label><input className="search" value={storefrontSettings.navCollections || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,navCollections:e.target.value})}/>
                     <label>Track order menu label</label><input className="search" value={storefrontSettings.navTracking || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,navTracking:e.target.value})}/>
+                    <h4>Storefront Visibility</h4>
+                    <label><input type="checkbox" checked={storefrontSettings.showAnnouncement !== false} onChange={e=>setStorefrontSettings({...storefrontSettings,showAnnouncement:e.target.checked})}/> Show announcement bar</label>
+                    <label><input type="checkbox" checked={storefrontSettings.showCustomBanner !== false} onChange={e=>setStorefrontSettings({...storefrontSettings,showCustomBanner:e.target.checked})}/> Show custom banner</label>
+                    <label><input type="checkbox" checked={storefrontSettings.showCategoryStrip !== false} onChange={e=>setStorefrontSettings({...storefrontSettings,showCategoryStrip:e.target.checked})}/> Show category strip</label>
                     <label>Category strip heading</label><input className="search" value={storefrontSettings.categoryStripTitle || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,categoryStripTitle:e.target.value})}/>
                     <label>All products label</label><input className="search" value={storefrontSettings.allProductsLabel || ''} onChange={e=>setStorefrontSettings({...storefrontSettings,allProductsLabel:e.target.value})}/>
                     <label>Category menu items (1–12)</label><input className="search" type="number" min="1" max="12" value={storefrontSettings.categoryStripLimit || 7} onChange={e=>setStorefrontSettings({...storefrontSettings,categoryStripLimit:Math.max(1,Math.min(12,Number(e.target.value)||1))})}/>
