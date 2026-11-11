@@ -1283,3 +1283,42 @@ a{color:inherit}
   .product-detail-panel{padding-top:62px!important}
   .product-detail-panel>.account-close{top:10px;right:10px;width:44px;height:44px;min-width:44px;min-height:44px}
 }
+
+
+/* Refined CORE KITS price tags */
+.app .product.product-clickable .product-price{
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px;
+}
+.app .product.product-clickable .product-price strong{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:6px 11px;border:1px solid color-mix(in srgb,var(--store-accent,#b89a62) 42%,transparent);
+  border-radius:4px;background:color-mix(in srgb,var(--store-accent,#b89a62) 13%,#fff);
+  color:var(--store-text,#201e19);font-size:14px;font-weight:850;
+  letter-spacing:.15px;line-height:1.2;font-variant-numeric:tabular-nums;
+}
+.app .product.product-clickable .product-price .original-price{
+  color:#969087;font-size:11px;font-weight:600;text-decoration:line-through;
+  text-decoration-thickness:1px;
+}
+.app .product.product-clickable .product-sale{
+  border-radius:3px;background:#24231f;color:#f7f1e5;
+  border:1px solid #b9975b;padding:6px 8px;font-size:9px;letter-spacing:.7px;
+}
+.app .product-detail-panel .detail-price{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  color:#201e19;font-size:29px;font-weight:900;letter-spacing:-.5px;
+  font-variant-numeric:tabular-nums;
+}
+.app .product-detail-panel .detail-price:not(:has(del)){
+  width:max-content;padding:7px 13px;border:1px solid #c8b58f;
+  border-radius:5px;background:#eee7d9;
+}
+.app .product-detail-panel .detail-price del{
+  padding:4px 8px;border-radius:3px;background:#eee9df;
+  color:#9c9588;font-size:13px;font-weight:600;
+}
+@media(max-width:700px){
+  .app .product.product-clickable .product-price{gap:6px;margin-top:7px}
+  .app .product.product-clickable .product-price strong{padding:5px 8px;font-size:12px}
+  .app .product-detail-panel .detail-price{font-size:25px}
+}
