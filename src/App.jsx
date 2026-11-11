@@ -652,7 +652,6 @@ sizes: (p.sizes || []).join(','),
           {categories.slice(0, Number(storefrontSettings.collectionTileLimit) || 4).map((c,i) => <button key={c.id} onClick={() => {setCategory(c.id); document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}><span>0{i+1}</span><strong>{c.name}</strong><small>{storefrontSettings.collectionTileCta || 'SHOP COLLECTION'} ↗</small></button>)}
         </div>
       </section>}
-}
       <main id="shop" style={{order: storefrontSettings.sectionOrder?.indexOf('shop') ?? 5}} className="shop">
         <div className="section-heading">
           <div><p className="eyebrow">{storefrontSettings.shopEyebrow || 'THE CORE KITS STORE'}</p><h2>{storefrontSettings.shopTitle || 'Explore All Products'}</h2><p className="shop-intro">{storefrontSettings.shopDescription || 'Choose your team. Find your fit. Get match-day ready.'}</p></div>
