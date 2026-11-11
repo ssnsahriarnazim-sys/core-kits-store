@@ -29,6 +29,7 @@ export default function App() {
   const [showLogin, setShowLogin] = useState(isAdminRoute);
   const [showAccount, setShowAccount] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showTracking, setShowTracking] = useState(false);
   const [customer, setCustomer] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -618,7 +619,7 @@ sizes: (p.sizes || []).join(','),
         <button className="header-icon mobile-menu-trigger" onClick={() => setShowMenu(true)} aria-label="Open menu">☰</button>
         <a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a>
         <nav className="desktop-links">
-          <a href="#">{storefrontSettings.navHome || 'HOME'}</a><a href="#shop">{storefrontSettings.navShop || 'SHOP ALL'}</a><a href="#collections">{storefrontSettings.navCollections || 'COLLECTIONS'}</a><a href="#tracking">{storefrontSettings.navTracking || 'TRACK ORDER'}</a>
+          <a href="#">{storefrontSettings.navHome || 'HOME'}</a><a href="#shop">{storefrontSettings.navShop || 'SHOP ALL'}</a><a href="#collections">{storefrontSettings.navCollections || 'COLLECTIONS'}</a>
         </nav>
         <div className="header-tools">
           <button className="header-icon" onClick={() => document.getElementById('product-search')?.focus()} aria-label="Search">⌕</button>
@@ -651,45 +652,7 @@ sizes: (p.sizes || []).join(','),
           {categories.slice(0, Number(storefrontSettings.collectionTileLimit) || 4).map((c,i) => <button key={c.id} onClick={() => {setCategory(c.id); document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}><span>0{i+1}</span><strong>{c.name}</strong><small>{storefrontSettings.collectionTileCta || 'SHOP COLLECTION'} ↗</small></button>)}
         </div>
       </section>}
-{storefrontSettings.trackingEnabled && <section style={{order: storefrontSettings.sectionOrder?.indexOf('tracking') ?? 4}} id="tracking" className="tracking-section">
-  <div className="tracking-box">
-    <p className="eyebrow">{storefrontSettings.trackingEyebrow || 'ORDER TRACKING'}</p>
-    <h2>{storefrontSettings.trackingTitle || 'Track Your Order.'}</h2>
-    <p>{storefrontSettings.trackingDescription || 'Enter your Order ID and phone number to check your order status.'}</p>
-
-    <form onSubmit={trackOrder}>
-      <input
-        className="search"
-        placeholder="Enter Order ID"
-        value={trackingId}
-        onChange={e => setTrackingId(e.target.value)}
-        required
-      />
-
-      <input
-        className="search"
-        placeholder="Enter Phone Number"
-        value={trackingPhone}
-        onChange={e => setTrackingPhone(e.target.value)}
-        required
-      />
-
-      <button className="admin-submit" disabled={trackingLoading}>
-        {trackingLoading ? 'CHECKING...' : (storefrontSettings.trackingButton || 'TRACK ORDER')}
-      </button>
-    </form>
-
-    {trackedOrder && (
-      <div className="tracking-result">
-        <h3>{trackedOrder.product_name}</h3>
-        <p>Size: {trackedOrder.size}</p>
-        <p>Quantity: {trackedOrder.quantity}</p>
-        <p>Total: ৳{trackedOrder.total_price ?? 'Not set'}</p>
-        <h3>Status: {trackedOrder.status}</h3>
-      </div>
-    )}
-  </div>
-</section>}
+}
       <main id="shop" style={{order: storefrontSettings.sectionOrder?.indexOf('shop') ?? 5}} className="shop">
         <div className="section-heading">
           <div><p className="eyebrow">{storefrontSettings.shopEyebrow || 'THE CORE KITS STORE'}</p><h2>{storefrontSettings.shopTitle || 'Explore All Products'}</h2><p className="shop-intro">{storefrontSettings.shopDescription || 'Choose your team. Find your fit. Get match-day ready.'}</p></div>
@@ -721,7 +684,7 @@ sizes: (p.sizes || []).join(','),
       </div>
 
       <footer className="site-footer">
-        <div className="footer-main"><div><a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a><p>{storefrontSettings.footerTagline}</p><small>{storefrontSettings.footerDescription}</small></div><div><b>{storefrontSettings.footerShopHeading || 'SHOP'}</b><a href="#shop">{storefrontSettings.allProductsLabel || 'All Products'}</a><a href="#collections">Collections</a><a href="#tracking">Track Order</a></div><div><b>{storefrontSettings.footerHelpHeading || 'HELP & SUPPORT'}</b><a href="#tracking">Order Tracking</a><a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">{storefrontSettings.footerContactLabel || 'Contact on WhatsApp'}</a><button onClick={()=>setShowAccount(true)}>{storefrontSettings.footerAccountLabel || 'My Account'}</button></div></div>
+        <div className="footer-main"><div><a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a><p>{storefrontSettings.footerTagline}</p><small>{storefrontSettings.footerDescription}</small></div><div><b>{storefrontSettings.footerShopHeading || 'SHOP'}</b><a href="#shop">{storefrontSettings.allProductsLabel || 'All Products'}</a><a href="#collections">Collections</a><button type="button" onClick={()=>setShowTracking(true)}>{storefrontSettings.navTracking || 'Track Order'}</button></div><div><b>{storefrontSettings.footerHelpHeading || 'HELP & SUPPORT'}</b><button type="button" onClick={()=>setShowTracking(true)}>Order Tracking</button><a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">{storefrontSettings.footerContactLabel || 'Contact on WhatsApp'}</a><button onClick={()=>setShowAccount(true)}>{storefrontSettings.footerAccountLabel || 'My Account'}</button></div></div>
         <div className="footer-social-links">{storefrontSettings.facebookUrl && <a href={storefrontSettings.facebookUrl} target="_blank" rel="noreferrer">FACEBOOK ↗</a>}{storefrontSettings.instagramUrl && <a href={storefrontSettings.instagramUrl} target="_blank" rel="noreferrer">INSTAGRAM ↗</a>}{storefrontSettings.tiktokUrl && <a href={storefrontSettings.tiktokUrl} target="_blank" rel="noreferrer">TIKTOK ↗</a>}</div>
         <div className="footer-bottom"><small>{storefrontSettings.copyrightText || '© 2026 CORE KITS. ALL RIGHTS RESERVED.'}</small><small>{storefrontSettings.footerBottomText || 'BUILT FOR THE LOVE OF THE GAME.'}</small></div>
       </footer>
@@ -860,6 +823,24 @@ sizes: (p.sizes || []).join(','),
           </section>
         </div>
       )}
+      {showTracking && storefrontSettings.trackingEnabled !== false && (
+        <div className="account-overlay" onClick={() => setShowTracking(false)}>
+          <section className="account-panel tracking-modal-panel" onClick={e => e.stopPropagation()}>
+            <button className="account-close" onClick={() => setShowTracking(false)} aria-label="Close tracking">×</button>
+            <div className="tracking-box">
+              <p className="eyebrow">{storefrontSettings.trackingEyebrow || 'ORDER TRACKING'}</p>
+              <h2>{storefrontSettings.trackingTitle || 'Track Your Order.'}</h2>
+              <p>{storefrontSettings.trackingDescription || 'Enter your Order ID and phone number to check your order status.'}</p>
+              <form onSubmit={trackOrder}>
+                <input className="search" placeholder="Enter Order ID" value={trackingId} onChange={e => setTrackingId(e.target.value)} required/>
+                <input className="search" placeholder="Enter Phone Number" value={trackingPhone} onChange={e => setTrackingPhone(e.target.value)} required/>
+                <button className="admin-submit" disabled={trackingLoading}>{trackingLoading ? 'CHECKING...' : (storefrontSettings.trackingButton || 'TRACK ORDER')}</button>
+              </form>
+              {trackedOrder && <div className="tracking-result"><h3>{trackedOrder.product_name}</h3><p>Size: {trackedOrder.size}</p><p>Quantity: {trackedOrder.quantity}</p><p>Total: ৳{trackedOrder.total_price ?? 'Not set'}</p><h3>Status: {trackedOrder.status}</h3></div>}
+            </div>
+          </section>
+        </div>
+      )}
       {showMenu && (
         <div className="account-overlay" onClick={() => setShowMenu(false)}>
           <section className="account-panel menu-panel" onClick={e => e.stopPropagation()}>
@@ -867,7 +848,7 @@ sizes: (p.sizes || []).join(','),
             <p className="eyebrow">CORE KITS</p><h2>Menu</h2>
             <a href="#" onClick={() => setShowMenu(false)}>⌂　{storefrontSettings.navHome || 'Home'}</a>
             <a href="#shop" onClick={() => setShowMenu(false)}>⚽　{storefrontSettings.navShop || 'Shop Collection'}</a>
-            <a href="#tracking" onClick={() => setShowMenu(false)}>▣　{storefrontSettings.navTracking || 'Track Order'}</a>
+            <button onClick={() => { setShowMenu(false); setShowTracking(true); }}>▣　{storefrontSettings.navTracking || 'Track Order'}</button>
             <button onClick={() => { setShowMenu(false); setShowAccount(true); }}>♙　My Account</button>
             <a href={`https://wa.me/${WA}`} target="_blank" rel="noreferrer">☏　Contact Us</a>
           </section>
