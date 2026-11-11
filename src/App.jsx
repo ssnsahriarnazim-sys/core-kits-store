@@ -892,10 +892,10 @@ sizes: (p.sizes || []).join(','),
                 <div className="customer-order-history">
                   <h3>My Order History</h3>
                   {customerOrdersLoading ? <p className="account-muted">Loading your orders...</p> :
-                    customerOrders.length ? customerOrders.map(order => (
+                    customerOrders.length ? customerOrders.map((order, orderIndex) => (
                       <div className="customer-order-card" key={order.id}>
                         <div className="customer-order-card-head">
-                          <div><strong>ORDER #{String(order.id).slice(0, 8).toUpperCase()}</strong>
+                          <div><strong>ORDER {orderIndex + 1} · #{String(order.id).slice(0, 8).toUpperCase()}</strong>
                             <small>{new Date(order.created_at).toLocaleDateString()} · {order.status || 'Pending'}</small></div>
                           <strong>৳{order.total_price ?? '—'}</strong>
                         </div>
