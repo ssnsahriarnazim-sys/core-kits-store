@@ -629,7 +629,8 @@ sizes: (p.sizes || []).join(','),
       </header>
 
       {storefrontSettings.bannerUrl && <section className="custom-store-banner"><img src={storefrontSettings.bannerUrl} alt="CORE KITS custom banner"/></section>}
-      <section className="designer-strip">
+      <div className="homepage-sections">
+      <section style={{order:-1}} className="designer-strip">
         <div className="designer-label">{storefrontSettings.categoryStripTitle || 'SHOP BY CATEGORY'}</div>
         <button className={category === 'All' ? 'selected' : ''} onClick={() => setCategory('All')}>{storefrontSettings.allProductsLabel || 'ALL PRODUCTS'}</button>
         {categories.slice(0,7).map(c => <button key={c.id} className={category === c.id ? 'selected' : ''} onClick={() => {setCategory(c.id);document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}>{c.name}</button>)}
@@ -717,6 +718,7 @@ sizes: (p.sizes || []).join(','),
           </p>
         )}
       </main>
+      </div>
 
       <footer className="site-footer">
         <div className="footer-main"><div><a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a><p>{storefrontSettings.footerTagline}</p><small>{storefrontSettings.footerDescription}</small></div><div><b>{storefrontSettings.footerShopHeading || 'SHOP'}</b><a href="#shop">{storefrontSettings.allProductsLabel || 'All Products'}</a><a href="#collections">Collections</a><a href="#tracking">Track Order</a></div><div><b>{storefrontSettings.footerHelpHeading || 'HELP & SUPPORT'}</b><a href="#tracking">Order Tracking</a><a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">{storefrontSettings.footerContactLabel || 'Contact on WhatsApp'}</a><button onClick={()=>setShowAccount(true)}>{storefrontSettings.footerAccountLabel || 'My Account'}</button></div></div>
