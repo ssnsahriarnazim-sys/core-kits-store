@@ -1822,3 +1822,26 @@ a{color:inherit}
   .app .customer-order-card { padding: 13px; }
   .app .customer-order-card-items > div { font-size: .78rem; }
 }
+
+
+/* Make every saved order unmistakably separate inside My Account */
+.app .account-panel .customer-order-history {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 18px !important;
+}
+.app .account-panel .customer-order-history .customer-order-card {
+  display: grid !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 0 2px !important;
+  padding: 17px !important;
+  border: 2px solid #b89a62 !important;
+  border-radius: 15px !important;
+  background: #172437 !important;
+  box-shadow: 0 5px 16px rgba(0,0,0,.14) !important;
+}
+.app .account-panel .customer-order-history .customer-order-card + .customer-order-card {
+  margin-top: 4px !important;
+}
