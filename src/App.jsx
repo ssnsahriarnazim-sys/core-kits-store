@@ -207,13 +207,39 @@ const [trackingLoading, setTrackingLoading] = useState(false);
   async function loadCustomerOrders() {
     if (!customer?.id) return;
     setCustomerOrdersLoading(true);
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('customer_id', customer.id)
-      .order('created_at', { ascending: false });
-    if (!error) setCustomerOrders(data || []);
-    setCustomerOrdersLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('customer_id', customer.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      const orderRows = data || [];
+      if (!orderRows.length) {
+        setCustomerOrders([]);
+        return;
+      }
+      const orderIds = orderRows.map(order => order.id);
+      const { data: itemRows, error: itemError } = await supabase
+        .from('order_items')
+        .select('id,order_id,product_name,size,quantity,unit_price,line_total')
+        .in('order_id', orderIds)
+        .order('created_at', { ascending: true });
+      if (itemError) throw itemError;
+      const itemsByOrder = (itemRows || []).reduce((grouped, item) => {
+        (grouped[item.order_id] ||= []).push(item);
+        return grouped;
+      }, {});
+      setCustomerOrders(orderRows.map(order => ({
+        ...order,
+        order_items: itemsByOrder[order.id] || []
+      })));
+    } catch (error) {
+      setProfileMessage('Order history could not be loaded: ' + error.message);
+      setCustomerOrders([]);
+    } finally {
+      setCustomerOrdersLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -867,10 +893,19 @@ sizes: (p.sizes || []).join(','),
                   <h3>My Order History</h3>
                   {customerOrdersLoading ? <p className="account-muted">Loading your orders...</p> :
                     customerOrders.length ? customerOrders.map(order => (
-                      <div className="cart-line" key={order.id}>
-                        <div><strong>{order.product_name}</strong><small>Order: {order.id}</small>
-                          <small>{new Date(order.created_at).toLocaleDateString()} · {order.status}</small></div>
-                        <strong>৳{order.total_price}</strong>
+                      <div className="customer-order-card" key={order.id}>
+                        <div className="customer-order-card-head">
+                          <div><strong>ORDER #{String(order.id).slice(0, 8).toUpperCase()}</strong>
+                            <small>{new Date(order.created_at).toLocaleDateString()} · {order.status || 'Pending'}</small></div>
+                          <strong>৳{order.total_price ?? '—'}</strong>
+                        </div>
+                        <div className="customer-order-card-items">
+                          {(order.order_items || []).length ? order.order_items.map((item, index) => (
+                            <div key={item.id || index}><span>{item.product_name} · {item.size || '—'} × {item.quantity}</span><strong>৳{item.line_total ?? Number(item.unit_price || 0) * Number(item.quantity || 0)}</strong></div>
+                          )) : <div><span>{order.product_name || 'Order items'}</span><strong>Qty: {order.quantity || 1}</strong></div>}
+                        </div>
+                        <small className="customer-order-full-id">Full Order ID: {order.id}</small>
+                        <div className="customer-order-card-foot"><span>Delivery: ৳{order.delivery_fee ?? '—'}</span><span>Total: ৳{order.total_price ?? '—'}</span></div>
                       </div>
                     )) : <p className="account-muted">No orders linked to this account yet. Sign in before checkout to save future orders here.</p>}
                 </div>
