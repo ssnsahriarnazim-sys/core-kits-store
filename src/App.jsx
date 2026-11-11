@@ -268,7 +268,13 @@ async function updateOrderStatus(id, status) {
 
   async function loadStorefrontSettings() {
     const { data, error } = await supabase.from('storefront_settings').select('settings').eq('id', 'default').maybeSingle();
-    if (!error && data?.settings) setStorefrontSettings({ ...defaultStorefrontSettings, ...data.settings });
+    if (!error && data?.settings) {
+      const merged = { ...defaultStorefrontSettings, ...data.settings };
+      const validSections = ['choice','recommended','collections','shop'];
+      const savedOrder = Array.isArray(merged.sectionOrder) ? merged.sectionOrder : [];
+      merged.sectionOrder = [...savedOrder.filter(key => validSections.includes(key)), ...validSections.filter(key => !savedOrder.includes(key))];
+      setStorefrontSettings(merged);
+    }
     setSettingsLoaded(true);
   }
   async function saveStorefrontSettings(e) {
@@ -704,7 +710,7 @@ sizes: (p.sizes || []).join(','),
       </div>
 
       <footer className="site-footer">
-        <div className="footer-main"><div><a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a><p>{storefrontSettings.footerTagline}</p><small>{storefrontSettings.footerDescription}</small></div><div><b>{storefrontSettings.footerShopHeading || 'SHOP'}</b><a href="#shop">{storefrontSettings.allProductsLabel || 'All Products'}</a><a href="#collections">Collections</a><button type="button" onClick={()=>setShowTracking(true)}>{storefrontSettings.navTracking || 'Track Order'}</button></div><div><b>{storefrontSettings.footerHelpHeading || 'HELP & SUPPORT'}</b><button type="button" onClick={()=>setShowTracking(true)}>Order Tracking</button><a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">{storefrontSettings.footerContactLabel || 'Contact on WhatsApp'}</a><button onClick={()=>setShowAccount(true)}>{storefrontSettings.footerAccountLabel || 'My Account'}</button></div></div>
+        <div className="footer-main"><div><a className="logo" href="#">{(storefrontSettings.logoText || 'CORE KITS').split(' ')[0]}<span>{(storefrontSettings.logoText || 'CORE KITS').split(' ').slice(1).join(' ')}</span><i>.</i></a><p>{storefrontSettings.footerTagline}</p><small>{storefrontSettings.footerDescription}</small></div><div><b>{storefrontSettings.footerShopHeading || 'SHOP'}</b><a href="#shop">{storefrontSettings.allProductsLabel || 'All Products'}</a><a href="#collections">Collections</a>{storefrontSettings.trackingEnabled !== false && <button type="button" onClick={()=>setShowTracking(true)}>{storefrontSettings.navTracking || 'Track Order'}</button>}</div><div><b>{storefrontSettings.footerHelpHeading || 'HELP & SUPPORT'}</b>{storefrontSettings.trackingEnabled !== false && <button type="button" onClick={()=>setShowTracking(true)}>Order Tracking</button>}<a href="https://wa.me/966564905417" target="_blank" rel="noreferrer">{storefrontSettings.footerContactLabel || 'Contact on WhatsApp'}</a><button onClick={()=>setShowAccount(true)}>{storefrontSettings.footerAccountLabel || 'My Account'}</button></div></div>
         <div className="footer-social-links">{storefrontSettings.facebookUrl && <a href={storefrontSettings.facebookUrl} target="_blank" rel="noreferrer">FACEBOOK ↗</a>}{storefrontSettings.instagramUrl && <a href={storefrontSettings.instagramUrl} target="_blank" rel="noreferrer">INSTAGRAM ↗</a>}{storefrontSettings.tiktokUrl && <a href={storefrontSettings.tiktokUrl} target="_blank" rel="noreferrer">TIKTOK ↗</a>}</div>
         <div className="footer-bottom"><small>{storefrontSettings.copyrightText || '© 2026 CORE KITS. ALL RIGHTS RESERVED.'}</small><small>{storefrontSettings.footerBottomText || 'BUILT FOR THE LOVE OF THE GAME.'}</small></div>
       </footer>
@@ -869,7 +875,7 @@ sizes: (p.sizes || []).join(','),
             <p className="eyebrow">CORE KITS</p><h2>Menu</h2>
             <a href="#" onClick={() => setShowMenu(false)}>⌂　{storefrontSettings.navHome || 'Home'}</a>
             <a href="#shop" onClick={() => setShowMenu(false)}>⚽　{storefrontSettings.navShop || 'Shop Collection'}</a>
-            <button onClick={() => { setShowMenu(false); setShowTracking(true); }}>▣　{storefrontSettings.navTracking || 'Track Order'}</button>
+            {storefrontSettings.trackingEnabled !== false && <button onClick={() => { setShowMenu(false); setShowTracking(true); }}>▣　{storefrontSettings.navTracking || 'Track Order'}</button>}
             <button onClick={() => { setShowMenu(false); setShowAccount(true); }}>♙　My Account</button>
             <a href={`https://wa.me/${WA}`} target="_blank" rel="noreferrer">☏　Contact Us</a>
           </section>
@@ -959,7 +965,7 @@ sizes: (p.sizes || []).join(','),
                     <label>Product limit (1–12)</label><input className="search" type="number" min="1" max="12" value={storefrontSettings.recommendedLimit} onChange={e=>setStorefrontSettings({...storefrontSettings,recommendedLimit:Math.max(1,Math.min(12,Number(e.target.value)||1))})}/>
                     <h4>Homepage Section Order</h4>
                     <p className="customizer-help">Move sections up or down to change their order on the storefront.</p>
-                    {(storefrontSettings.sectionOrder || ['choice','recommended','collections','shop']).map((key,index)=><div className="section-order-row" key={key}><strong>{({choice:'Customer Choice',recommended:'Recommended Collection',collections:'Explore Collections',shop:'All Products Shop'})[key]}</strong><span><button type="button" disabled={index===0} onClick={()=>{const next=[...(storefrontSettings.sectionOrder || ['choice','recommended','collections','shop'])];[next[index-1],next[index]]=[next[index],next[index-1]];setStorefrontSettings({...storefrontSettings,sectionOrder:next});}}>↑</button><button type="button" disabled={index===3} onClick={()=>{const next=[...(storefrontSettings.sectionOrder || ['choice','recommended','collections','shop'])];[next[index+1],next[index]]=[next[index],next[index+1]];setStorefrontSettings({...storefrontSettings,sectionOrder:next});}}>↓</button></span></div>)}
+                    {(storefrontSettings.sectionOrder || ['choice','recommended','collections','shop']).filter(key=>['choice','recommended','collections','shop'].includes(key)).map((key,index)=><div className="section-order-row" key={key}><strong>{({choice:'Customer Choice',recommended:'Recommended Collection',collections:'Explore Collections',shop:'All Products Shop'})[key]}</strong><span><button type="button" disabled={index===0} onClick={()=>{const next=[...(storefrontSettings.sectionOrder || ['choice','recommended','collections','shop'])];[next[index-1],next[index]]=[next[index],next[index-1]];setStorefrontSettings({...storefrontSettings,sectionOrder:next});}}>↑</button><button type="button" disabled={index===3} onClick={()=>{const next=[...(storefrontSettings.sectionOrder || ['choice','recommended','collections','shop'])];[next[index+1],next[index]]=[next[index],next[index+1]];setStorefrontSettings({...storefrontSettings,sectionOrder:next});}}>↓</button></span></div>)}
                     <h4>Other Homepage Sections</h4>
                     <label className="customizer-check"><input type="checkbox" checked={!!storefrontSettings.collectionsEnabled} onChange={e=>setStorefrontSettings({...storefrontSettings,collectionsEnabled:e.target.checked})}/> Show Explore Collections</label>
                     <label>Collections small heading</label><input className="search" value={storefrontSettings.collectionsEyebrow} onChange={e=>setStorefrontSettings({...storefrontSettings,collectionsEyebrow:e.target.value})}/>
