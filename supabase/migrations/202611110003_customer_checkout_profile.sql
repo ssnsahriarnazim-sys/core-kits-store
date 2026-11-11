@@ -67,7 +67,7 @@ begin
     raise exception 'Invalid delivery area';
   end if;
 
-  if p_delivery_fee <> case when p_delivery_area = 'inside' then 70 else 130 end then
+  if p_delivery_fee <> (case when p_delivery_area = 'inside' then 70 else 130 end) then
     raise exception 'Delivery fee does not match the selected area';
   end if;
 
