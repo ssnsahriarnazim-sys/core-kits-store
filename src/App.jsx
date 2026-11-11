@@ -25,7 +25,8 @@ export default function App() {
   const [checkoutBusy, setCheckoutBusy] = useState(false);
   const [checkoutResult, setCheckoutResult] = useState('');
   const [admin, setAdmin] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
+  const isAdminRoute = window.location.pathname.replace(/\\/+$/, '') === '/admin';
+  const [showLogin, setShowLogin] = useState(isAdminRoute);
   const [showAccount, setShowAccount] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [customer, setCustomer] = useState(null);
@@ -573,7 +574,6 @@ sizes: (p.sizes || []).join(','),
           <button className="header-icon" onClick={() => setShowWishlist(true)} aria-label="Wishlist">♡<small className="header-count">{wishlist.length}</small></button>
           <button className="header-icon" onClick={() => setShowAccount(true)} aria-label="My account">♙</button>
           <button className="header-icon header-cart" onClick={() => setShowCart(true)} aria-label="Shopping cart">♧<small>{cartItems.reduce((n,item)=>n+item.quantity,0)}</small></button>
-          <button className="header-icon admin-shortcut" onClick={() => setShowLogin(true)} aria-label="Admin">⚙</button>
         </div>
       </header>
 
@@ -832,7 +832,7 @@ sizes: (p.sizes || []).join(','),
           </section>
         </div>
       )}
-      {showLogin && (
+      {isAdminRoute && showLogin && (
         <div className="modal">
           <div className="modal-content">
             <button className="close"
