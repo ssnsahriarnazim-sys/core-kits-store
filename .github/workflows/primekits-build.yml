@@ -1,3 +1,4 @@
+# Re-trigger build after the November 11 GitHub Actions queue incident.
 name: CORE KITS build check
 
 on:
