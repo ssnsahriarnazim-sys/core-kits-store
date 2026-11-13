@@ -869,10 +869,10 @@ sizes: (p.sizes || []).join(','),
             <button className="account-close" onClick={() => setShowCart(false)}>×</button>
             <p className="eyebrow">YOUR SELECTION</p><h2>Shopping Cart</h2>
             {!cartItems.length ? <p className="account-muted">Your cart is empty.</p> : cartItems.map(item=>(
-              <div className="cart-line" key={item.product.id + item.size + (item.sleeve || 'Short Sleeve') + (item.customName || '') + (item.customNumber || '')}>
-                <div><strong>{item.product.name}</strong><small>Size: {item.size}{item.customName ? ` · Name: ${item.customName}` : ''}{item.customNumber ? ` · No: ${item.customNumber}` : ''} · {item.sleeve || 'Short Sleeve'} · ৳{item.product.price}</small></div>
-                <input aria-label="Quantity" type="number" min="1" max={item.product.stock} value={item.quantity} onChange={e=>updateCartQuantity(item.product.id,item.size,Number(e.target.value),item.customName || '',item.customNumber || '',item.sleeve || 'Short Sleeve')}/>
-                <button onClick={()=>updateCartQuantity(item.product.id,item.size,0,item.customName || '',item.customNumber || '',item.sleeve || 'Short Sleeve')}>Remove</button>
+              <div className="cart-line" key={item.product.id + item.size + (item.sleeve || '') + (item.customName || '') + (item.customNumber || '')}>
+                <div><strong>{item.product.name}</strong><small>Size: {item.size}{item.sleeve ? ` · ${item.sleeve}` : ''}{item.customName ? ` · Name: ${item.customName}` : ''}{item.customNumber ? ` · No: ${item.customNumber}` : ''} · ৳{item.product.price}</small></div>
+                <input aria-label="Quantity" type="number" min="1" max={item.product.stock} value={item.quantity} onChange={e=>updateCartQuantity(item.product.id,item.size,Number(e.target.value),item.customName || '',item.customNumber || '',item.sleeve || '')}/>
+                <button onClick={()=>updateCartQuantity(item.product.id,item.size,0,item.customName || '',item.customNumber || '',item.sleeve || '')}>Remove</button>
               </div>
             ))}
             {cartItems.length>0 && <>
