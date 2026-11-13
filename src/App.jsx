@@ -60,6 +60,7 @@ export default function App() {
   sizes: 'M,L,XL,XXL,XXXL',
   category_id: '',
   image_url: '',
+  has_short_sleeve: true,
   has_long_sleeve: false,
   allow_custom_name: false,
   allow_custom_number: false
@@ -497,6 +498,7 @@ if (data) {
     sizes: 'M,L,XL,XXL,XXXL',
     category_id: categories[0]?.id || '',
     image_url: '',
+    has_short_sleeve: true,
     has_long_sleeve: false,
     allow_custom_name: false,
     allow_custom_number: false
@@ -554,6 +556,7 @@ if (image_urls.length > 0) {
         category_id: form.category_id || null,
         image_url,
         image_urls,
+        has_short_sleeve: !!form.has_short_sleeve,
         has_long_sleeve: !!form.has_long_sleeve,
         allow_custom_name: !!form.allow_custom_name,
         allow_custom_number: !!form.allow_custom_number,
@@ -601,6 +604,7 @@ stock: p.stock || 0,
 sizes: (p.sizes || []).join(','),
       category_id: p.category_id || '',
       image_url: p.image_url || '',
+      has_short_sleeve: p.has_short_sleeve !== false,
       has_long_sleeve: !!p.has_long_sleeve,
       allow_custom_name: !!p.allow_custom_name,
       allow_custom_number: !!p.allow_custom_number
@@ -1222,6 +1226,7 @@ sizes: (p.sizes || []).join(','),
 
                     <div className="admin-option-settings">
                       <h4>Customer Product Options</h4>
+                      <label><input type="checkbox" checked={!!form.has_short_sleeve} onChange={e => setForm({...form,has_short_sleeve:e.target.checked})}/> Short Sleeve option available</label>
                       <label><input type="checkbox" checked={!!form.has_long_sleeve} onChange={e => setForm({...form,has_long_sleeve:e.target.checked})}/> Long Sleeve option available</label>
                       <label><input type="checkbox" checked={!!form.allow_custom_name} onChange={e => setForm({...form,allow_custom_name:e.target.checked})}/> Allow custom name</label>
                       <label><input type="checkbox" checked={!!form.allow_custom_number} onChange={e => setForm({...form,allow_custom_number:e.target.checked})}/> Allow custom number</label>
@@ -1375,14 +1380,19 @@ function ProductCard({product, ratingStats, onOpen, wished, compared, onWishlist
 
 function ProductDetailActions({product,onAdd,onBuyNow,settings = {}}) {
   const [size,setSize]=useState(product.sizes?.[0] || '');
-  const [sleeve,setSleeve]=useState('Short Sleeve');
+  const [sleeve,setSleeve]=useState(product.has_short_sleeve !== false ? 'Short Sleeve' : product.has_long_sleeve ? 'Long Sleeve' : '');
   const [quantity,setQuantity]=useState(1);
   const [customName,setCustomName]=useState('');
   const [customNumber,setCustomNumber]=useState('');
+  const hasShortSleeve = product.has_short_sleeve !== false;
   const hasLongSleeve = !!product.has_long_sleeve;
   const allowsName = !!product.allow_custom_name;
   const allowsNumber = !!product.allow_custom_number;
-  const sleeveValue = hasLongSleeve ? sleeve : '';
+  const hasSleeveOptions = hasShortSleeve || hasLongSleeve;
+  const sleeveValue = hasSleeveOptions ? sleeve : '';
+  useEffect(() => {
+    setSleeve(hasShortSleeve ? 'Short Sleeve' : hasLongSleeve ? 'Long Sleeve' : '');
+  }, [product.id, hasShortSleeve, hasLongSleeve]);
   const nameValue = allowsName ? customName.trim() : '';
   const numberValue = allowsNumber ? customNumber : '';
   return <div className="detail-actions">
@@ -1390,11 +1400,11 @@ function ProductDetailActions({product,onAdd,onBuyNow,settings = {}}) {
     <select className="search" value={size} onChange={e=>setSize(e.target.value)}>
       {(product.sizes?.length ? product.sizes : ['M','L','XL','XXL']).map(s=><option key={s} value={s}>{s}</option>)}
     </select>
-    {hasLongSleeve && <>
+    {hasSleeveOptions && <>
       <label>Sleeve type</label>
       <select className="search" value={sleeve} onChange={e=>setSleeve(e.target.value)}>
-        <option value="Short Sleeve">Short Sleeve</option>
-        <option value="Long Sleeve">Long Sleeve</option>
+        {hasShortSleeve && <option value="Short Sleeve">Short Sleeve</option>}
+        {hasLongSleeve && <option value="Long Sleeve">Long Sleeve</option>}
       </select>
     </>}
     {allowsName && <>
