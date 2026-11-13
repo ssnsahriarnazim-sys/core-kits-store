@@ -59,7 +59,10 @@ export default function App() {
   stock: 0,
   sizes: 'M,L,XL,XXL,XXXL',
   category_id: '',
-  image_url: ''
+  image_url: '',
+  has_long_sleeve: false,
+  allow_custom_name: false,
+  allow_custom_number: false
 });
   const [editing, setEditing] = useState(null);
   const [photo, setPhoto] = useState(null);
@@ -493,7 +496,10 @@ if (data) {
     stock: 0,
     sizes: 'M,L,XL,XXL,XXXL',
     category_id: categories[0]?.id || '',
-    image_url: ''
+    image_url: '',
+    has_long_sleeve: false,
+    allow_custom_name: false,
+    allow_custom_number: false
   });
   setEditing(null);
   setPhoto(null);
@@ -548,6 +554,9 @@ if (image_urls.length > 0) {
         category_id: form.category_id || null,
         image_url,
         image_urls,
+        has_long_sleeve: !!form.has_long_sleeve,
+        allow_custom_name: !!form.allow_custom_name,
+        allow_custom_number: !!form.allow_custom_number,
         is_active: true
       };
 
@@ -591,7 +600,10 @@ original_price: p.original_price || '',
 stock: p.stock || 0,
 sizes: (p.sizes || []).join(','),
       category_id: p.category_id || '',
-      image_url: p.image_url || ''
+      image_url: p.image_url || '',
+      has_long_sleeve: !!p.has_long_sleeve,
+      allow_custom_name: !!p.allow_custom_name,
+      allow_custom_number: !!p.allow_custom_number
     });
     setPhoto(null);
     setPhotos([]);
@@ -632,7 +644,7 @@ sizes: (p.sizes || []).join(','),
     }
   }
 
-  function addToCart(product, size, quantity, customName = '', customNumber = '', sleeve = 'Short Sleeve') {
+  function addToCart(product, size, quantity, customName = '', customNumber = '', sleeve = '') {
     setCartItems(current => {
       const existing = current.find(item => item.product.id === product.id && item.size === size && item.customName === customName && item.customNumber === customNumber && item.sleeve === sleeve);
       if (existing) return current.map(item => item === existing ? {...item, quantity: Math.min(Number(product.stock || 99), item.quantity + quantity)} : item);
@@ -642,14 +654,14 @@ sizes: (p.sizes || []).join(','),
     setMessage('Added to cart!');
   }
 
-  function buyNow(product, size, quantity, customName = '', customNumber = '', sleeve = 'Short Sleeve') {
+  function buyNow(product, size, quantity, customName = '', customNumber = '', sleeve = '') {
     setCartItems([{product, size, quantity, customName, customNumber, sleeve}]);
     setSelectedProduct(null);
     setShowCheckout(true);
   }
 
-  function updateCartQuantity(productId, size, quantity, customName = '', customNumber = '', sleeve = 'Short Sleeve') {
-    const matches = item => item.product.id === productId && item.size === size && (item.customName || '') === customName && (item.customNumber || '') === customNumber && (item.sleeve || 'Short Sleeve') === sleeve;
+  function updateCartQuantity(productId, size, quantity, customName = '', customNumber = '', sleeve = '') {
+    const matches = item => item.product.id === productId && item.size === size && (item.customName || '') === customName && (item.customNumber || '') === customNumber && (item.sleeve || '') === sleeve;
     if (quantity < 1) {
       setCartItems(current => current.filter(item => !matches(item)));
       return;
@@ -665,12 +677,12 @@ sizes: (p.sizes || []).join(','),
     e.preventDefault();
     if (!cartItems.length) return;
     setCheckoutBusy(true);
-    const itemNames = cartItems.map(item => `${item.product.name} (Size: ${item.size}, ${item.sleeve || 'Short Sleeve'}${item.customName ? `, Name: ${item.customName}` : ''}${item.customNumber ? `, Number: ${item.customNumber}` : ''} × ${item.quantity})`).join(' | ');
+    const itemNames = cartItems.map(item => `${item.product.name} (${[item.size && `Size: ${item.size}`, item.sleeve, item.customName && `Name: ${item.customName}`, item.customNumber && `Number: ${item.customNumber}`].filter(Boolean).join(', ')} × ${item.quantity})`).join(' | ');
     const totalQuantity = cartItems.reduce((sum,item) => sum + item.quantity, 0);
     setCheckoutMessage('');
     const itemPayload = cartItems.map(item => ({
       product_id: item.product.id, product_name: item.product.name,
-      size: [item.size, item.sleeve || 'Short Sleeve', item.customName && `Name: ${item.customName}`, item.customNumber && `Number: ${item.customNumber}`].filter(Boolean).join(' / '),
+      size: [item.size, item.sleeve, item.customName && `Name: ${item.customName}`, item.customNumber && `Number: ${item.customNumber}`].filter(Boolean).join(' / '),
       quantity: item.quantity, unit_price: Number(item.product.price || 0),
       line_total: Number(item.product.price || 0) * item.quantity
     }));
@@ -1208,6 +1220,14 @@ sizes: (p.sizes || []).join(','),
                       onChange={e => setForm({...form,sizes:e.target.value})}
                     />
 
+                    <div className="admin-option-settings">
+                      <h4>Customer Product Options</h4>
+                      <label><input type="checkbox" checked={!!form.has_long_sleeve} onChange={e => setForm({...form,has_long_sleeve:e.target.checked})}/> Long Sleeve option available</label>
+                      <label><input type="checkbox" checked={!!form.allow_custom_name} onChange={e => setForm({...form,allow_custom_name:e.target.checked})}/> Allow custom name</label>
+                      <label><input type="checkbox" checked={!!form.allow_custom_number} onChange={e => setForm({...form,allow_custom_number:e.target.checked})}/> Allow custom number</label>
+                      <p className="account-muted">Only selected options will appear on this product for customers.</p>
+                    </div>
+
                     <select className="search"
                       value={form.category_id}
                       onChange={e => setForm({...form,category_id:e.target.value})}
@@ -1359,28 +1379,40 @@ function ProductDetailActions({product,onAdd,onBuyNow,settings = {}}) {
   const [quantity,setQuantity]=useState(1);
   const [customName,setCustomName]=useState('');
   const [customNumber,setCustomNumber]=useState('');
+  const hasLongSleeve = !!product.has_long_sleeve;
+  const allowsName = !!product.allow_custom_name;
+  const allowsNumber = !!product.allow_custom_number;
+  const sleeveValue = hasLongSleeve ? sleeve : '';
+  const nameValue = allowsName ? customName.trim() : '';
+  const numberValue = allowsNumber ? customNumber : '';
   return <div className="detail-actions">
     <label>Choose size</label>
     <select className="search" value={size} onChange={e=>setSize(e.target.value)}>
       {(product.sizes?.length ? product.sizes : ['M','L','XL','XXL']).map(s=><option key={s} value={s}>{s}</option>)}
     </select>
-    <label>Sleeve type</label>
-    <select className="search" value={sleeve} onChange={e=>setSleeve(e.target.value)}>
-      <option value="Short Sleeve">Short Sleeve</option>
-      <option value="Long Sleeve">Long Sleeve</option>
-    </select>
-    <label>Custom name on jersey (optional)</label>
-    <input className="search" maxLength="18" placeholder="e.g. NAJIM" value={customName} onChange={e=>setCustomName(e.target.value.toUpperCase())}/>
-    <label>Custom number (optional)</label>
-    <input className="search" inputMode="numeric" maxLength="2" placeholder="e.g. 10" value={customNumber} onChange={e=>setCustomNumber(e.target.value.replace(/\D/g,'').slice(0,2))}/>
+    {hasLongSleeve && <>
+      <label>Sleeve type</label>
+      <select className="search" value={sleeve} onChange={e=>setSleeve(e.target.value)}>
+        <option value="Short Sleeve">Short Sleeve</option>
+        <option value="Long Sleeve">Long Sleeve</option>
+      </select>
+    </>}
+    {allowsName && <>
+      <label>Custom name on jersey (optional)</label>
+      <input className="search" maxLength="18" placeholder="e.g. NAJIM" value={customName} onChange={e=>setCustomName(e.target.value.toUpperCase())}/>
+    </>}
+    {allowsNumber && <>
+      <label>Custom number (optional)</label>
+      <input className="search" inputMode="numeric" maxLength="2" placeholder="e.g. 10" value={customNumber} onChange={e=>setCustomNumber(e.target.value.replace(/\D/g,'').slice(0,2))}/>
+    </>}
     <label>Quantity</label>
     <div className="quantity-stepper" aria-label="Select quantity">
       <button type="button" aria-label="Decrease quantity" disabled={quantity <= 1} onClick={()=>setQuantity(q=>Math.max(1,q-1))}>−</button>
       <output aria-live="polite">{quantity}</output>
       <button type="button" aria-label="Increase quantity" disabled={quantity >= Math.max(1,Number(product.stock)||1)} onClick={()=>setQuantity(q=>Math.min(Math.max(1,Number(product.stock)||1),q+1))}>+</button>
     </div>
-    <button className="account-action" disabled={product.stock<1} onClick={()=>onAdd(product,size,quantity,customName.trim(),customNumber,sleeve)}>{settings.addCartLabel || 'ADD TO CART'}</button>
-    <button className="detail-buy-now" disabled={product.stock<1} onClick={()=>onBuyNow(product,size,quantity,customName.trim(),customNumber,sleeve)}>{settings.buyNowLabel || 'BUY NOW'} ↗</button>
-    <p className="account-muted">Custom printing requests will be included with your order details.</p>
+    <button className="account-action" disabled={product.stock<1} onClick={()=>onAdd(product,size,quantity,nameValue,numberValue,sleeveValue)}>{settings.addCartLabel || 'ADD TO CART'}</button>
+    <button className="detail-buy-now" disabled={product.stock<1} onClick={()=>onBuyNow(product,size,quantity,nameValue,numberValue,sleeveValue)}>{settings.buyNowLabel || 'BUY NOW'} ↗</button>
+    {(allowsName || allowsNumber) && <p className="account-muted">Custom printing requests will be included with your order details.</p>}
   </div>;
 }
