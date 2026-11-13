@@ -912,7 +912,7 @@ sizes: (p.sizes || []).join(','),
                 <p className="account-muted">You are signed in as</p>
                 <strong className="account-email">{customer.email || 'Account email unavailable'}</strong>
                 <section className="customer-profile-settings">
-                  <h3>My Customer Details</h3>
+                  <h3>My Details</h3>
                   <p className="account-muted">Save your name, phone and delivery address for faster future orders.</p>
                   <form onSubmit={saveCustomerProfile}>
                     <label>Full name</label><input className="search" value={profileName} onChange={e=>setProfileName(e.target.value)} required />
