@@ -909,9 +909,19 @@ sizes: (p.sizes || []).join(','),
             <h2>My Account</h2>
             {customer ? (
               <>
-                <p className="account-muted">You are signed in as</p>
-                <strong className="account-email">{customer.email || 'Account email unavailable'}</strong>
-                <section className="customer-profile-settings">
+                {admin ? (
+                  <>
+                    <p className="eyebrow">ADMIN ACCOUNT</p>
+                    <p className="account-muted">You are signed in with your CORE KITS administrator account.</p>
+                    <a className="account-link" href="/admin">Open Admin Dashboard →</a>
+                  </>
+                ) : (
+                  <>
+                    <p className="account-muted">You are signed in as</p>
+                    <strong className="account-email">{customer.email || 'Account email unavailable'}</strong>
+                  </>
+                )}
+                {!admin && <section className="customer-profile-settings">
                   <h3>My Details</h3>
                   <p className="account-muted">Save your name, phone and delivery address for faster future orders.</p>
                   <form onSubmit={saveCustomerProfile}>
@@ -922,9 +932,9 @@ sizes: (p.sizes || []).join(','),
                     <button className="account-action" disabled={profileBusy}>{profileBusy ? 'SAVING DETAILS...' : 'SAVE MY DETAILS'}</button>
                     {profileMessage && <p className="profile-message" role="status">{profileMessage}</p>}
                   </form>
-                </section>
-                {storefrontSettings.trackingEnabled !== false && <a className="account-link" href="#tracking" onClick={e => {e.preventDefault();setShowAccount(false);setShowTracking(true);}}>Track an order →</a>}
-                <div className="customer-order-history">
+                </section>}
+                {!admin && storefrontSettings.trackingEnabled !== false && <a className="account-link" href="#tracking" onClick={e => {e.preventDefault();setShowAccount(false);setShowTracking(true);}}>Track an order →</a>}
+                {!admin && <div className="customer-order-history">
                   <h3>My Order History</h3>
                   {customerOrdersLoading ? <p className="account-muted">Loading your orders...</p> :
                     customerOrders.length ? customerOrders.map((order, orderIndex) => (
@@ -943,7 +953,7 @@ sizes: (p.sizes || []).join(','),
                         <div className="customer-order-card-foot"><span>Delivery: ৳{order.delivery_fee ?? '—'}</span><span>Total: ৳{order.total_price ?? '—'}</span></div>
                       </div>
                     )) : <p className="account-muted">No orders linked to this account yet. Sign in before checkout to save future orders here.</p>}
-                </div>
+                </div>}
                 <button className="account-action" onClick={logout}>LOG OUT</button>
               </>
             ) : (
@@ -1005,6 +1015,7 @@ sizes: (p.sizes || []).join(','),
             <a href="#shop" onClick={() => setShowMenu(false)}>⚽　{storefrontSettings.navShop || 'Shop Collection'}</a>
             {storefrontSettings.trackingEnabled !== false && <button onClick={() => { setShowMenu(false); setShowTracking(true); }}>▣　{storefrontSettings.navTracking || 'Track Order'}</button>}
             <button onClick={() => { setShowMenu(false); setShowAccount(true); }}>♙　My Account</button>
+            {admin && <a href="/admin">▣　Admin Dashboard</a>}
             <a href={`https://wa.me/${(storefrontSettings.whatsappNumber || WA).replace(/\D/g, "")}`} target="_blank" rel="noreferrer">☏　Contact Us</a>
           </section>
         </div>
